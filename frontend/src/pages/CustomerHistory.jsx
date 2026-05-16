@@ -1,19 +1,25 @@
 import { useState } from "react";
+
 import API from "../services/api";
+
 import Layout from "../components/Layout";
 
 function CustomerHistory() {
 
-  const [mobile, setMobile] = useState("");
+  const [mobile, setMobile] =
+    useState("");
 
-  const [history, setHistory] = useState([]);
+  const [history, setHistory] =
+    useState([]);
 
-  const [customerInfo, setCustomerInfo] = useState(null);
+  const [customerInfo, setCustomerInfo] =
+    useState(null);
 
-  const [paymentInputs, setPaymentInputs] = useState({});
+  const [paymentInputs, setPaymentInputs] =
+    useState({});
 
   // =====================================
-  // FETCH CUSTOMER HISTORY
+  // SEARCH CUSTOMER HISTORY
   // =====================================
   const handleSearch = async () => {
 
@@ -24,18 +30,26 @@ function CustomerHistory() {
       );
 
       setCustomerInfo({
-        name: res.data.customer_name,
-        mobile: res.data.customer_mobile,
-        email: res.data.customer_email,
+
+        name:
+          res.data.customer_name,
+
+        mobile:
+          res.data.customer_mobile,
+
+        email:
+          res.data.customer_email,
       });
 
-      setHistory(res.data.history);
+      setHistory(
+        res.data.history
+      );
 
     } catch (err) {
 
       console.error(err);
 
-      alert("No history found");
+      alert("No customer history found");
 
       setHistory([]);
 
@@ -49,10 +63,12 @@ function CustomerHistory() {
   const getStatusStyle = (status) => {
 
     if (status === "PAID") {
+
       return "bg-green-100 text-green-700";
     }
 
     if (status === "PARTIAL") {
+
       return "bg-yellow-100 text-yellow-700";
     }
 
@@ -68,8 +84,11 @@ function CustomerHistory() {
   ) => {
 
     setPaymentInputs({
+
       ...paymentInputs,
-      [invoiceId]: value,
+
+      [invoiceId]:
+        value,
     });
   };
 
@@ -87,7 +106,9 @@ function CustomerHistory() {
 
       if (!amount) {
 
-        alert("Enter payment amount");
+        alert(
+          "Enter payment amount"
+        );
 
         return;
       }
@@ -109,12 +130,14 @@ function CustomerHistory() {
 
       console.error(err);
 
-      alert("Failed to update payment");
+      alert(
+        "Failed to update payment"
+      );
     }
   };
 
   // =====================================
-  // SECURE PDF DOWNLOAD
+  // DOWNLOAD PDF
   // =====================================
   const downloadInvoice = async (
     invoiceId,
@@ -130,13 +153,11 @@ function CustomerHistory() {
         }
       );
 
-      // CREATE FILE URL
       const url =
         window.URL.createObjectURL(
           new Blob([response.data])
         );
 
-      // CREATE DOWNLOAD LINK
       const link =
         document.createElement("a");
 
@@ -169,7 +190,9 @@ function CustomerHistory() {
 
       <div className="space-y-8">
 
+        {/* ===================================== */}
         {/* HEADER */}
+        {/* ===================================== */}
         <div>
 
           <h1 className="text-3xl font-bold text-slate-800">
@@ -177,16 +200,19 @@ function CustomerHistory() {
           </h1>
 
           <p className="text-slate-500 mt-2">
-            View complete customer billing records and payment history.
+            View customer invoices,
+            prescription history and payment records.
           </p>
 
         </div>
 
-        {/* SEARCH */}
+        {/* ===================================== */}
+        {/* SEARCH SECTION */}
+        {/* ===================================== */}
         <div className="bg-white rounded-2xl shadow-md p-8 border border-slate-100">
 
           <h2 className="text-xl font-bold text-slate-800 mb-6">
-            Search Customer Records
+            Search Customer
           </h2>
 
           <div className="flex flex-col md:flex-row gap-4">
@@ -195,7 +221,9 @@ function CustomerHistory() {
               type="text"
               placeholder="Enter mobile number"
               value={mobile}
-              onChange={(e) => setMobile(e.target.value)}
+              onChange={(e) =>
+                setMobile(e.target.value)
+              }
               className="flex-1 border border-slate-300 rounded-xl px-4 py-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
 
@@ -210,7 +238,9 @@ function CustomerHistory() {
 
         </div>
 
+        {/* ===================================== */}
         {/* CUSTOMER INFO */}
+        {/* ===================================== */}
         {customerInfo && (
 
           <div className="bg-white rounded-2xl shadow-md p-8 border border-slate-100">
@@ -240,54 +270,84 @@ function CustomerHistory() {
             </div>
 
           </div>
+
         )}
 
-        {/* HISTORY */}
+        {/* ===================================== */}
+        {/* HISTORY TABLE */}
+        {/* ===================================== */}
         {history.length > 0 ? (
 
           <div className="bg-white rounded-2xl shadow-md border border-slate-100 overflow-hidden">
 
-            <div className="p-6 border-b border-slate-100">
+            {/* TABLE HEADER */}
+            <div className="p-6 border-b border-slate-100 flex items-center justify-between">
 
-              <h2 className="text-xl font-bold text-slate-800">
-                Invoice Records
-              </h2>
+              <div>
+
+                <h2 className="text-xl font-bold text-slate-800">
+                  Invoice Records
+                </h2>
+
+                <p className="text-slate-500 text-sm mt-1">
+                  Complete optical billing history
+                </p>
+
+              </div>
+
+              <div className="bg-indigo-100 text-indigo-700 px-5 py-2 rounded-xl text-sm font-semibold">
+                {history.length} Invoices
+              </div>
 
             </div>
 
+            {/* TABLE */}
             <div className="overflow-x-auto">
 
               <table className="w-full">
 
-                <thead className="bg-slate-50">
+                {/* TABLE HEAD */}
+                <thead className="bg-slate-50 border-b border-slate-200">
 
                   <tr>
 
-                    <th className="px-6 py-4 text-left">
+                    <th className="px-6 py-4 text-left text-sm font-bold text-slate-700">
                       Invoice
                     </th>
 
-                    <th className="px-6 py-4 text-left">
+                    <th className="px-6 py-4 text-left text-sm font-bold text-slate-700">
+                      Frame
+                    </th>
+
+                    <th className="px-6 py-4 text-left text-sm font-bold text-slate-700">
+                      Glass
+                    </th>
+
+                    <th className="px-6 py-4 text-left text-sm font-bold text-slate-700">
                       Total
                     </th>
 
-                    <th className="px-6 py-4 text-left">
+                    <th className="px-6 py-4 text-left text-sm font-bold text-slate-700">
                       Paid
                     </th>
 
-                    <th className="px-6 py-4 text-left">
+                    <th className="px-6 py-4 text-left text-sm font-bold text-slate-700">
                       Due
                     </th>
 
-                    <th className="px-6 py-4 text-left">
+                    <th className="px-6 py-4 text-left text-sm font-bold text-slate-700">
+                      Payment Mode
+                    </th>
+
+                    <th className="px-6 py-4 text-left text-sm font-bold text-slate-700">
                       Status
                     </th>
 
-                    <th className="px-6 py-4 text-left">
+                    <th className="px-6 py-4 text-left text-sm font-bold text-slate-700">
                       Payment
                     </th>
 
-                    <th className="px-6 py-4 text-left">
+                    <th className="px-6 py-4 text-center text-sm font-bold text-slate-700">
                       PDF
                     </th>
 
@@ -295,31 +355,84 @@ function CustomerHistory() {
 
                 </thead>
 
+                {/* TABLE BODY */}
                 <tbody>
 
                   {history.map((item, index) => (
 
                     <tr
                       key={index}
-                      className="border-t border-slate-100"
+                      className="border-b border-slate-100 hover:bg-slate-50 transition-all duration-200"
                     >
 
-                      <td className="px-6 py-5 font-semibold">
-                        {item.invoice_number}
-                      </td>
-
+                      {/* INVOICE */}
                       <td className="px-6 py-5">
-                        ₹ {item.total_amount}
+
+                        <div className="font-bold text-slate-800">
+                          {item.invoice_number}
+                        </div>
+
+                        <div className="text-sm text-slate-500 mt-1">
+                          {item.date}
+                        </div>
+
                       </td>
 
-                      <td className="px-6 py-5 text-green-700 font-semibold">
-                        ₹ {item.paid_amount}
+                      {/* FRAME */}
+                      <td className="px-6 py-5">
+
+                        <div className="font-medium text-slate-700">
+                          {item.frame_type || "N/A"}
+                        </div>
+
                       </td>
 
-                      <td className="px-6 py-5 text-red-600 font-semibold">
-                        ₹ {item.due_amount}
+                      {/* GLASS */}
+                      <td className="px-6 py-5">
+
+                        <div className="font-medium text-slate-700">
+                          {item.glass_type || "N/A"}
+                        </div>
+
                       </td>
 
+                      {/* TOTAL */}
+                      <td className="px-6 py-5">
+
+                        <span className="font-bold text-blue-700">
+                          ₹ {item.total_amount}
+                        </span>
+
+                      </td>
+
+                      {/* PAID */}
+                      <td className="px-6 py-5">
+
+                        <span className="font-bold text-green-700">
+                          ₹ {item.paid_amount}
+                        </span>
+
+                      </td>
+
+                      {/* DUE */}
+                      <td className="px-6 py-5">
+
+                        <span className="font-bold text-red-600">
+                          ₹ {item.due_amount}
+                        </span>
+
+                      </td>
+
+                      {/* PAYMENT MODE */}
+                      <td className="px-6 py-5">
+
+                        <span className="bg-slate-100 text-slate-700 px-3 py-2 rounded-xl text-sm font-semibold">
+                          {item.payment_mode}
+                        </span>
+
+                      </td>
+
+                      {/* STATUS */}
                       <td className="px-6 py-5">
 
                         <span
@@ -330,7 +443,7 @@ function CustomerHistory() {
 
                       </td>
 
-                      {/* PAYMENT */}
+                      {/* PAYMENT UPDATE */}
                       <td className="px-6 py-5">
 
                         {item.payment_status !== "PAID" ? (
@@ -377,8 +490,8 @@ function CustomerHistory() {
 
                       </td>
 
-                      {/* PDF DOWNLOAD */}
-                      <td className="px-6 py-5">
+                      {/* PDF */}
+                      <td className="px-6 py-5 text-center">
 
                         <button
                           onClick={() =>
@@ -419,7 +532,8 @@ function CustomerHistory() {
             </h2>
 
             <p className="text-slate-500 mt-3">
-              Search using a mobile number to view invoice records.
+              Search using customer mobile number
+              to view invoice records.
             </p>
 
           </div>

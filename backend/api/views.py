@@ -15,14 +15,15 @@ from .permissions import admin_only
 from django.http import FileResponse
 
 import os
+import re
 
 from django.conf import settings
 
 from datetime import date
 
-from .serializers import InvoiceSerializer
+from decimal import Decimal
+
 from django.db.models import Sum
-from django.contrib.auth.models import User
 
 
 # =========================================
@@ -50,10 +51,18 @@ def admin_dashboard(request):
     )['total'] or 0
 
     return Response({
-        "total_sales": total_sales,
-        "total_invoices": total_invoices,
-        "total_customers": total_customers,
-        "today_sales": today_sales
+
+        "total_sales":
+            total_sales,
+
+        "total_invoices":
+            total_invoices,
+
+        "total_customers":
+            total_customers,
+
+        "today_sales":
+            today_sales
     })
 
 
@@ -68,60 +77,267 @@ def create_invoice(request):
 
         data = request.data
 
-        # =========================
+        # =====================================
+        # MOBILE VALIDATION
+        # =====================================
+        mobile = data.get(
+            'mobile',
+            ''
+        ).strip()
+
+        if not re.fullmatch(
+            r'^[0-9]{10}$',
+            mobile
+        ):
+
+            return Response({
+                "error":
+                    "Mobile number must be exactly 10 digits"
+            }, status=400)
+
+        # =====================================
+        # EMAIL VALIDATION
+        # =====================================
+        email = data.get(
+            'email',
+            ''
+        ).strip()
+
+        if not re.fullmatch(
+            r'^[\w\.-]+@[\w\.-]+\.\w+$',
+            email
+        ):
+
+            return Response({
+                "error":
+                    "Invalid email format"
+            }, status=400)
+
+        # =====================================
         # CUSTOMER CREATE / GET
-        # =========================
+        # =====================================
         customer, created = Customer.objects.get_or_create(
-            mobile=data['mobile'],
+
+            mobile=mobile,
+
             defaults={
-                'name': data['name'],
-                'email': data['email']
+
+                'name':
+                    data.get('name'),
+
+                'email':
+                    email
             }
         )
 
-        # =========================
-        # CALCULATIONS
-        # =========================
-        quantity = int(data['quantity'])
+        # =====================================
+        # UPDATE CUSTOMER
+        # =====================================
+        customer.name = data.get('name')
 
-        rate = float(data['rate'])
+        customer.email = email
 
-        total = quantity * rate
+        customer.save()
 
-        paid_amount = float(
-            data.get('paid_amount', 0)
+        # =====================================
+        # FRAME VALUES
+        # =====================================
+        frame_type = data.get(
+            'frame_type',
+            'Not Required'
         )
 
-        # =========================
+        if frame_type == "Not Required":
+
+            frame_quantity = 0
+
+            frame_price = Decimal('0')
+
+        else:
+
+            frame_quantity = int(
+                float(
+                    data.get(
+                        'frame_quantity',
+                        1
+                    )
+                )
+            )
+
+            frame_price = Decimal(
+                str(
+                    data.get(
+                        'frame_price',
+                        0
+                    )
+                )
+            )
+
+        # =====================================
+        # GLASS VALUES
+        # =====================================
+        glass_type = data.get(
+            'glass_type',
+            'Not Required'
+        )
+
+        if (
+            glass_type == "Not Required"
+            or glass_type == ""
+        ):
+
+            glass_type = "Not Required"
+
+            glass_quantity = Decimal('0')
+
+            glass_price = Decimal('0')
+
+        else:
+
+            glass_quantity = Decimal(
+                str(
+                    data.get(
+                        'glass_quantity',
+                        1
+                    )
+                )
+            )
+
+            glass_price = Decimal(
+                str(
+                    data.get(
+                        'glass_price',
+                        0
+                    )
+                )
+            )
+
+        # =====================================
+        # LENS TYPE
+        # =====================================
+        lens_type = data.get(
+            'lens_type',
+            'Not Required'
+        )
+
+        if (
+            lens_type == ""
+            or lens_type is None
+        ):
+
+            lens_type = "Not Required"
+
+        # =====================================
+        # PAYMENT
+        # =====================================
+        paid_amount = Decimal(
+            str(
+                data.get(
+                    'paid_amount',
+                    0
+                )
+            )
+        )
+
+        # =====================================
         # CREATE INVOICE
-        # =========================
+        # =====================================
         invoice = Invoice.objects.create(
 
             customer=customer,
 
             created_by=request.user,
 
-            product_description=data[
-                'product_description'
-            ],
+            # =====================================
+            # FRAME
+            # =====================================
+            frame_type=frame_type,
 
-            quantity=quantity,
+            frame_quantity=frame_quantity,
 
-            rate=rate,
+            frame_price=frame_price,
 
-            total_amount=total,
+            # =====================================
+            # GLASS
+            # =====================================
+            glass_type=glass_type,
 
+            glass_quantity=glass_quantity,
+
+            glass_price=glass_price,
+
+            # =====================================
+            # LENS
+            # =====================================
+            lens_type=lens_type,
+
+            # =====================================
+            # PAYMENT
+            # =====================================
             paid_amount=paid_amount,
+
+            payment_mode=data.get(
+                'payment_mode',
+                'Cash'
+            ),
+
+            # =====================================
+            # RIGHT EYE
+            # =====================================
+            right_sph=data.get(
+                'right_sph',
+                ''
+            ),
+
+            right_cyl=data.get(
+                'right_cyl',
+                ''
+            ),
+
+            right_axis=data.get(
+                'right_axis',
+                ''
+            ),
+
+            right_add=data.get(
+                'right_add',
+                ''
+            ),
+
+            # =====================================
+            # LEFT EYE
+            # =====================================
+            left_sph=data.get(
+                'left_sph',
+                ''
+            ),
+
+            left_cyl=data.get(
+                'left_cyl',
+                ''
+            ),
+
+            left_axis=data.get(
+                'left_axis',
+                ''
+            ),
+
+            left_add=data.get(
+                'left_add',
+                ''
+            ),
         )
 
-        # =========================
+        # =====================================
         # GENERATE PDF
-        # =========================
-        pdf_path = generate_invoice_pdf(invoice)
+        # =====================================
+        pdf_path = generate_invoice_pdf(
+            invoice
+        )
 
-        # =========================
+        # =====================================
         # RESPONSE
-        # =========================
+        # =====================================
         return Response({
 
             "message":
@@ -154,8 +370,16 @@ def create_invoice(request):
 
     except Exception as e:
 
+        print(
+            "CREATE INVOICE ERROR:",
+            str(e)
+        )
+
         return Response({
-            "error": str(e)
+
+            "error":
+                str(e)
+
         }, status=400)
 
 
@@ -172,12 +396,24 @@ def search_customer(request):
         mobile=query
     ).first()
 
+    if not customer:
+
+        customer = Customer.objects.filter(
+            name__icontains=query
+        ).first()
+
     if customer:
 
         return Response({
-            "name": customer.name,
-            "email": customer.email,
-            "mobile": customer.mobile
+
+            "name":
+                customer.name,
+
+            "email":
+                customer.email,
+
+            "mobile":
+                customer.mobile
         })
 
     return Response({
@@ -221,14 +457,14 @@ def customer_history(request, mobile):
             "date":
                 inv.date,
 
-            "product":
-                inv.product_description,
+            "frame_type":
+                inv.frame_type,
 
-            "quantity":
-                inv.quantity,
+            "glass_type":
+                inv.glass_type,
 
-            "rate":
-                inv.rate,
+            "lens_type":
+                inv.lens_type,
 
             "total_amount":
                 inv.total_amount,
@@ -242,15 +478,26 @@ def customer_history(request, mobile):
             "payment_status":
                 inv.payment_status,
 
+            "payment_mode":
+                inv.payment_mode,
+
             "download_url":
                 f"/api/download-invoice/{inv.id}/"
         })
 
     return Response({
-        "customer_name": customer.name,
-        "customer_mobile": customer.mobile,
-        "customer_email": customer.email,
-        "history": data
+
+        "customer_name":
+            customer.name,
+
+        "customer_mobile":
+            customer.mobile,
+
+        "customer_email":
+            customer.email,
+
+        "history":
+            data
     })
 
 
@@ -293,7 +540,10 @@ def login_user(request):
         })
 
     return Response({
-        "error": "Invalid credentials"
+
+        "error":
+            "Invalid credentials"
+
     }, status=401)
 
 
@@ -313,7 +563,10 @@ def download_invoice(request, invoice_id):
     except Invoice.DoesNotExist:
 
         return Response({
-            "error": "Invoice not found"
+
+            "error":
+                "Invoice not found"
+
         }, status=404)
 
     file_name = f"invoice_{invoice.id}.pdf"
@@ -323,10 +576,7 @@ def download_invoice(request, invoice_id):
         file_name
     )
 
-    # AUTO REGENERATE PDF IF MISSING
-    if not os.path.exists(file_path):
-
-        generate_invoice_pdf(invoice)
+    generate_invoice_pdf(invoice)
 
     return FileResponse(
         open(file_path, 'rb'),
@@ -350,42 +600,40 @@ def update_payment(request, invoice_id):
     except Invoice.DoesNotExist:
 
         return Response({
-            "error": "Invoice not found"
+
+            "error":
+                "Invoice not found"
+
         }, status=404)
 
     try:
 
-        additional_payment = float(
-            request.data.get('amount', 0)
+        additional_payment = Decimal(
+            str(
+                request.data.get(
+                    'amount',
+                    0
+                )
+            )
         )
 
-        # =========================
-        # VALIDATION
-        # =========================
         if additional_payment <= 0:
 
             return Response({
-                "error": "Payment amount must be greater than 0"
+
+                "error":
+                    "Payment amount must be greater than 0"
+
             }, status=400)
 
-        # =========================
-        # UPDATE PAYMENT
-        # =========================
         invoice.paid_amount += additional_payment
 
-        # Prevent overpayment
         if invoice.paid_amount > invoice.total_amount:
 
             invoice.paid_amount = invoice.total_amount
 
-        # Auto recalculates:
-        # due_amount
-        # payment_status
         invoice.save()
 
-        # =========================
-        # REGENERATE PDF
-        # =========================
         generate_invoice_pdf(invoice)
 
         return Response({
@@ -415,67 +663,348 @@ def update_payment(request, invoice_id):
     except Exception as e:
 
         return Response({
-            "error": str(e)
+
+            "error":
+                str(e)
+
         }, status=400)
-    
 
 
 # =========================================
-# ALL INVOICES (ADMIN)
+# ALL INVOICES
 # =========================================
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 @admin_only
 def all_invoices(request):
 
-    invoices = Invoice.objects.select_related(
-        'customer',
-        'created_by'
-    ).order_by('-created_at')
+    try:
 
-    data = []
+        invoices = Invoice.objects.select_related(
+            'customer',
+            'created_by'
+        ).order_by('-created_at')
 
-    for inv in invoices:
+        data = []
 
-        data.append({
+        for inv in invoices:
+
+            data.append({
+
+                "invoice_id":
+                    inv.id,
+
+                "invoice_number":
+                    str(inv.invoice_number),
+
+                "customer_name":
+                    inv.customer.name,
+
+                "customer_mobile":
+                    inv.customer.mobile,
+
+                "date":
+                    str(inv.date),
+
+                "frame_type":
+                    inv.frame_type or "--",
+
+                "frame_quantity":
+                    inv.frame_quantity,
+
+                "frame_price":
+                    float(inv.frame_price),
+
+                "glass_type":
+                    inv.glass_type or "--",
+
+                "glass_quantity":
+                    float(inv.glass_quantity),
+
+                "glass_price":
+                    float(inv.glass_price),
+
+                "lens_type":
+                    inv.lens_type or "--",
+
+                "total_amount":
+                    float(inv.total_amount),
+
+                "paid_amount":
+                    float(inv.paid_amount),
+
+                "due_amount":
+                    float(inv.due_amount),
+
+                "payment_status":
+                    inv.payment_status,
+
+                "payment_mode":
+                    inv.payment_mode,
+
+                # RIGHT EYE
+                "right_sph":
+                    inv.right_sph or "--",
+
+                "right_cyl":
+                    inv.right_cyl or "--",
+
+                "right_axis":
+                    inv.right_axis or "--",
+
+                "right_add":
+                    inv.right_add or "--",
+
+                # LEFT EYE
+                "left_sph":
+                    inv.left_sph or "--",
+
+                "left_cyl":
+                    inv.left_cyl or "--",
+
+                "left_axis":
+                    inv.left_axis or "--",
+
+                "left_add":
+                    inv.left_add or "--",
+
+                "created_by":
+                    inv.created_by.username
+                    if inv.created_by
+                    else "Unknown",
+
+                "download_url":
+                    f"/api/download-invoice/{inv.id}/"
+            })
+
+        return Response(data)
+
+    except Exception as e:
+
+        print(
+            "ALL INVOICES ERROR:",
+            str(e)
+        )
+
+        return Response({
+
+            "error":
+                str(e)
+
+        }, status=400)
+    
+# =========================================
+# EDIT / UPDATE INVOICE
+# =========================================
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+def update_invoice(request, invoice_id):
+
+    try:
+
+        invoice = Invoice.objects.get(
+            id=invoice_id
+        )
+
+    except Invoice.DoesNotExist:
+
+        return Response({
+
+            "error":
+                "Invoice not found"
+
+        }, status=404)
+
+    try:
+
+        data = request.data
+
+        # =====================================
+        # FRAME
+        # =====================================
+        frame_type = data.get(
+            'frame_type',
+            'Not Required'
+        )
+
+        invoice.frame_type = frame_type
+
+        if frame_type == "Not Required":
+
+            invoice.frame_quantity = 0
+
+            invoice.frame_price = Decimal('0.00')
+
+        else:
+
+            invoice.frame_quantity = int(
+                data.get(
+                    'frame_quantity',
+                    1
+                )
+            )
+
+            invoice.frame_price = Decimal(
+                str(
+                    data.get(
+                        'frame_price',
+                        0
+                    )
+                )
+            )
+
+        # =====================================
+        # GLASS
+        # =====================================
+        glass_type = data.get(
+            'glass_type',
+            'Not Required'
+        )
+
+        invoice.glass_type = glass_type
+
+        if glass_type == "Not Required":
+
+            invoice.glass_quantity = 0
+
+            invoice.glass_price = Decimal('0.00')
+
+        else:
+
+            invoice.glass_quantity = Decimal(
+                str(
+                    data.get(
+                        'glass_quantity',
+                        1
+                    )
+                )
+            )
+
+            invoice.glass_price = Decimal(
+                str(
+                    data.get(
+                        'glass_price',
+                        0
+                    )
+                )
+            )
+
+        # =====================================
+        # LENS TYPE
+        # =====================================
+        lens_type = data.get(
+            'lens_type',
+            'Not Required'
+        )
+
+        if (
+            lens_type == ""
+            or lens_type is None
+        ):
+
+            lens_type = "Not Required"
+
+        invoice.lens_type = lens_type
+
+        # =====================================
+        # KEEP EXISTING PAYMENT DETAILS
+        # =====================================
+        # Edit invoice should NOT change payment.
+        # Payment changes only from Update Payment.
+        invoice.paid_amount = invoice.paid_amount
+
+        invoice.payment_mode = invoice.payment_mode
+
+        # =====================================
+        # RIGHT EYE
+        # =====================================
+        invoice.right_sph = data.get(
+            'right_sph',
+            ''
+        )
+
+        invoice.right_cyl = data.get(
+            'right_cyl',
+            ''
+        )
+
+        invoice.right_axis = data.get(
+            'right_axis',
+            ''
+        )
+
+        invoice.right_add = data.get(
+            'right_add',
+            ''
+        )
+
+        # =====================================
+        # LEFT EYE
+        # =====================================
+        invoice.left_sph = data.get(
+            'left_sph',
+            ''
+        )
+
+        invoice.left_cyl = data.get(
+            'left_cyl',
+            ''
+        )
+
+        invoice.left_axis = data.get(
+            'left_axis',
+            ''
+        )
+
+        invoice.left_add = data.get(
+            'left_add',
+            ''
+        )
+
+        # =====================================
+        # SAVE
+        # =====================================
+        invoice.save()
+
+        # =====================================
+        # REGENERATE PDF
+        # =====================================
+        generate_invoice_pdf(invoice)
+
+        return Response({
+
+            "message":
+                "Invoice updated successfully",
 
             "invoice_id":
-                inv.id,
+                invoice.id,
 
             "invoice_number":
-                inv.invoice_number,
-
-            "customer_name":
-                inv.customer.name,
-
-            "customer_mobile":
-                inv.customer.mobile,
-
-            "date":
-                inv.date,
-
-            "product":
-                inv.product_description,
+                invoice.invoice_number,
 
             "total_amount":
-                inv.total_amount,
+                invoice.total_amount,
 
             "paid_amount":
-                inv.paid_amount,
+                invoice.paid_amount,
 
             "due_amount":
-                inv.due_amount,
+                invoice.due_amount,
 
             "payment_status":
-                inv.payment_status,
-
-            "created_by":
-                inv.created_by.username
-                if inv.created_by
-                else "Unknown",
-
-            "download_url":
-                f"/api/download-invoice/{inv.id}/"
+                invoice.payment_status
         })
 
-    return Response(data)
+    except Exception as e:
+
+        print(
+            "UPDATE INVOICE ERROR:",
+            str(e)
+        )
+
+        return Response({
+
+            "error":
+                str(e)
+
+        }, status=400)

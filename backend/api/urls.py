@@ -8,7 +8,8 @@ from .views import (
     admin_dashboard,
     download_invoice,
     update_payment,
-    all_invoices
+    all_invoices,
+    update_invoice
 )
 
 urlpatterns = [
@@ -46,4 +47,9 @@ urlpatterns = [
         'all-invoices/',
         all_invoices
     ),
+
+    path(
+        'update-invoice/<int:invoice_id>/',
+        update_invoice
+    )
 ]

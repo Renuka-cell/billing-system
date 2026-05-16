@@ -44,6 +44,12 @@ function Sidebar({
     },
 
     {
+      name: "All Invoices",
+      path: "/all-invoices",
+      icon: <ClipboardList size={20} />,
+    },
+
+    {
       name: "Create Invoice",
       path: "/create-invoice",
       icon: <FileText size={20} />,

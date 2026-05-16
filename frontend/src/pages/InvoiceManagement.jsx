@@ -4,6 +4,8 @@ import API from "../services/api";
 
 import Layout from "../components/Layout";
 
+import EditInvoiceModal from "../components/EditInvoiceModal";
+
 function InvoiceManagement() {
 
   const [invoices, setInvoices] =
@@ -11,6 +13,21 @@ function InvoiceManagement() {
 
   const [loading, setLoading] =
     useState(true);
+
+  const [selectedInvoice, setSelectedInvoice] =
+    useState(null);
+
+  const [showEditModal, setShowEditModal] =
+    useState(false);
+
+  const [paymentModal, setPaymentModal] =
+    useState(false);
+
+  const [paymentInvoice, setPaymentInvoice] =
+    useState(null);
+
+  const [paymentAmount, setPaymentAmount] =
+    useState("");
 
   // =====================================
   // FETCH ALL INVOICES
@@ -23,7 +40,19 @@ function InvoiceManagement() {
         "all-invoices/"
       );
 
-      setInvoices(res.data);
+      if (Array.isArray(res.data)) {
+
+        setInvoices(res.data);
+
+      } else {
+
+        console.error(
+          "Invalid invoices response:",
+          res.data
+        );
+
+        setInvoices([]);
+      }
 
     } catch (err) {
 
@@ -107,13 +136,85 @@ function InvoiceManagement() {
     }
   };
 
+  // =====================================
+  // OPEN EDIT MODAL
+  // =====================================
+  const openEditModal = (invoice) => {
+
+    setSelectedInvoice(invoice);
+
+    setShowEditModal(true);
+  };
+
+  // =====================================
+  // OPEN PAYMENT MODAL
+  // =====================================
+  const openPaymentModal = (invoice) => {
+
+    setPaymentInvoice(invoice);
+
+    setPaymentAmount("");
+
+    setPaymentModal(true);
+  };
+
+  // =====================================
+  // UPDATE PAYMENT
+  // =====================================
+  const handlePaymentUpdate = async () => {
+
+    try {
+
+      if (
+        !paymentAmount ||
+        Number(paymentAmount) <= 0
+      ) {
+
+        alert(
+          "Enter valid payment amount"
+        );
+
+        return;
+      }
+
+      await API.put(
+        `update-payment/${paymentInvoice.invoice_id}/`,
+        {
+          amount:
+            Number(paymentAmount),
+        }
+      );
+
+      alert(
+        "Payment Updated Successfully"
+      );
+
+      setPaymentModal(false);
+
+      setPaymentAmount("");
+
+      fetchInvoices();
+
+    } catch (err) {
+
+      console.error(err);
+
+      alert(
+        err?.response?.data?.error ||
+        "Failed to update payment"
+      );
+    }
+  };
+
   return (
 
     <Layout>
 
       <div className="space-y-8">
 
-        {/* HEADER */}
+        {/* ===================================== */}
+        {/* PAGE HEADER */}
+        {/* ===================================== */}
         <div>
 
           <h1 className="text-3xl font-bold text-slate-800">
@@ -121,23 +222,39 @@ function InvoiceManagement() {
           </h1>
 
           <p className="text-slate-500 mt-2">
-            Manage all billing invoices,
-            payments and customer transactions.
+            Manage optical invoices,
+            billing records and customer transactions.
           </p>
 
         </div>
 
-        {/* TABLE */}
+        {/* ===================================== */}
+        {/* TABLE SECTION */}
+        {/* ===================================== */}
         <div className="bg-white rounded-2xl shadow-md border border-slate-100 overflow-hidden">
 
-          <div className="p-6 border-b border-slate-100">
+          {/* HEADER */}
+          <div className="p-6 border-b border-slate-100 flex items-center justify-between">
 
-            <h2 className="text-xl font-bold text-slate-800">
-              All Invoices
-            </h2>
+            <div>
+
+              <h2 className="text-xl font-bold text-slate-800">
+                All Invoices
+              </h2>
+
+              <p className="text-slate-500 text-sm mt-1">
+                Complete billing history of your optical shop
+              </p>
+
+            </div>
+
+            <div className="bg-blue-100 text-blue-700 px-5 py-2 rounded-xl font-semibold text-sm">
+              {invoices.length} Records
+            </div>
 
           </div>
 
+          {/* LOADING */}
           {loading ? (
 
             <div className="p-10 text-center text-slate-500">
@@ -156,43 +273,66 @@ function InvoiceManagement() {
 
               <table className="w-full">
 
-                <thead className="bg-slate-50">
+                {/* ===================================== */}
+                {/* TABLE HEADER */}
+                {/* ===================================== */}
+                <thead className="bg-slate-50 border-b border-slate-200">
 
                   <tr>
 
-                    <th className="px-6 py-4 text-left">
+                    <th className="px-6 py-4 text-left text-sm font-bold text-slate-700">
                       Invoice
                     </th>
 
-                    <th className="px-6 py-4 text-left">
+                    <th className="px-6 py-4 text-left text-sm font-bold text-slate-700">
                       Customer
                     </th>
 
-                    <th className="px-6 py-4 text-left">
+                    <th className="px-6 py-4 text-left text-sm font-bold text-slate-700">
+                      Frame
+                    </th>
+
+                    <th className="px-6 py-4 text-left text-sm font-bold text-slate-700">
+                      Glass
+                    </th>
+
+                    <th className="px-6 py-4 text-left text-sm font-bold text-slate-700">
                       Date
                     </th>
 
-                    <th className="px-6 py-4 text-left">
+                    <th className="px-6 py-4 text-left text-sm font-bold text-slate-700">
                       Total
                     </th>
 
-                    <th className="px-6 py-4 text-left">
+                    <th className="px-6 py-4 text-left text-sm font-bold text-slate-700">
                       Paid
                     </th>
 
-                    <th className="px-6 py-4 text-left">
+                    <th className="px-6 py-4 text-left text-sm font-bold text-slate-700">
                       Due
                     </th>
 
-                    <th className="px-6 py-4 text-left">
+                    <th className="px-6 py-4 text-left text-sm font-bold text-slate-700">
+                      Payment
+                    </th>
+
+                    <th className="px-6 py-4 text-left text-sm font-bold text-slate-700">
                       Status
                     </th>
 
-                    <th className="px-6 py-4 text-left">
+                    <th className="px-6 py-4 text-left text-sm font-bold text-slate-700">
                       Created By
                     </th>
 
-                    <th className="px-6 py-4 text-left">
+                    <th className="px-6 py-4 text-center text-sm font-bold text-slate-700">
+                      Edit
+                    </th>
+
+                    <th className="px-6 py-4 text-center text-sm font-bold text-slate-700">
+                      Payment
+                    </th>
+
+                    <th className="px-6 py-4 text-center text-sm font-bold text-slate-700">
                       PDF
                     </th>
 
@@ -200,54 +340,100 @@ function InvoiceManagement() {
 
                 </thead>
 
+                {/* ===================================== */}
+                {/* TABLE BODY */}
+                {/* ===================================== */}
                 <tbody>
 
                   {invoices.map((item) => (
 
                     <tr
                       key={item.invoice_id}
-                      className="border-t border-slate-100 hover:bg-slate-50"
+                      className="border-b border-slate-100 hover:bg-slate-50 transition-all duration-200"
                     >
 
-                      {/* Invoice */}
-                      <td className="px-6 py-5 font-semibold text-slate-700">
-                        {item.invoice_number}
+                      {/* INVOICE */}
+                      <td className="px-6 py-5">
+
+                        <div className="font-bold text-slate-800">
+                          {item.invoice_number}
+                        </div>
+
                       </td>
 
-                      {/* Customer */}
+                      {/* CUSTOMER */}
                       <td className="px-6 py-5">
 
                         <div className="font-semibold text-slate-800">
                           {item.customer_name}
                         </div>
 
-                        <div className="text-sm text-slate-500">
+                        <div className="text-sm text-slate-500 mt-1">
                           {item.customer_mobile}
                         </div>
 
                       </td>
 
-                      {/* Date */}
+                      {/* FRAME */}
+                      <td className="px-6 py-5">
+
+                        <div className="font-medium text-slate-700">
+                          {item.frame_type || "N/A"}
+                        </div>
+
+                      </td>
+
+                      {/* GLASS */}
+                      <td className="px-6 py-5">
+
+                        <div className="font-medium text-slate-700">
+                          {item.glass_type || "N/A"}
+                        </div>
+
+                      </td>
+
+                      {/* DATE */}
                       <td className="px-6 py-5 text-slate-700">
                         {item.date}
                       </td>
 
-                      {/* Total */}
-                      <td className="px-6 py-5 font-semibold text-blue-700">
-                        ₹ {item.total_amount}
+                      {/* TOTAL */}
+                      <td className="px-6 py-5">
+
+                        <span className="font-bold text-blue-700">
+                          ₹ {item.total_amount}
+                        </span>
+
                       </td>
 
-                      {/* Paid */}
-                      <td className="px-6 py-5 font-semibold text-green-700">
-                        ₹ {item.paid_amount}
+                      {/* PAID */}
+                      <td className="px-6 py-5">
+
+                        <span className="font-bold text-green-700">
+                          ₹ {item.paid_amount}
+                        </span>
+
                       </td>
 
-                      {/* Due */}
-                      <td className="px-6 py-5 font-semibold text-red-600">
-                        ₹ {item.due_amount}
+                      {/* DUE */}
+                      <td className="px-6 py-5">
+
+                        <span className="font-bold text-red-600">
+                          ₹ {item.due_amount}
+                        </span>
+
                       </td>
 
-                      {/* Status */}
+                      {/* PAYMENT MODE */}
+                      <td className="px-6 py-5">
+
+                        <span className="bg-slate-100 text-slate-700 px-3 py-2 rounded-xl text-sm font-semibold">
+                          {item.payment_mode}
+                        </span>
+
+                      </td>
+
+                      {/* STATUS */}
                       <td className="px-6 py-5">
 
                         <span
@@ -258,13 +444,45 @@ function InvoiceManagement() {
 
                       </td>
 
-                      {/* Created By */}
-                      <td className="px-6 py-5 font-medium text-slate-700">
-                        {item.created_by}
+                      {/* CREATED BY */}
+                      <td className="px-6 py-5">
+
+                        <div className="font-medium text-slate-700">
+                          {item.created_by}
+                        </div>
+
                       </td>
 
-                      {/* Download */}
-                      <td className="px-6 py-5">
+                      {/* EDIT */}
+                      <td className="px-6 py-5 text-center">
+
+                        <button
+                          onClick={() =>
+                            openEditModal(item)
+                          }
+                          className="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-xl text-sm font-semibold"
+                        >
+                          Edit
+                        </button>
+
+                      </td>
+
+                      {/* PAYMENT UPDATE */}
+                      <td className="px-6 py-5 text-center">
+
+                        <button
+                          onClick={() =>
+                            openPaymentModal(item)
+                          }
+                          className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-xl text-sm font-semibold"
+                        >
+                          Update Payment
+                        </button>
+
+                      </td>
+
+                      {/* DOWNLOAD */}
+                      <td className="px-6 py-5 text-center">
 
                         <button
                           onClick={() =>
@@ -273,7 +491,7 @@ function InvoiceManagement() {
                               item.invoice_number
                             )
                           }
-                          className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-300"
+                          className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-300 shadow-sm"
                         >
                           Download
                         </button>
@@ -295,6 +513,114 @@ function InvoiceManagement() {
         </div>
 
       </div>
+
+      {/* ===================================== */}
+      {/* EDIT MODAL */}
+      {/* ===================================== */}
+      {showEditModal && selectedInvoice && (
+
+        <EditInvoiceModal
+          invoice={selectedInvoice}
+          onClose={() =>
+            setShowEditModal(false)
+          }
+          onSuccess={fetchInvoices}
+        />
+
+      )}
+
+      {/* ===================================== */}
+      {/* PAYMENT MODAL */}
+      {/* ===================================== */}
+      {paymentModal && paymentInvoice && (
+
+        <div className="fixed inset-0 bg-black/50 flex justify-center items-center z-50 p-4">
+
+          <div className="bg-white rounded-2xl w-full max-w-md p-8 relative">
+
+            {/* CLOSE */}
+            <button
+              onClick={() =>
+                setPaymentModal(false)
+              }
+              className="absolute top-4 right-5 text-2xl font-bold text-red-500"
+            >
+              ×
+            </button>
+
+            {/* TITLE */}
+            <h2 className="text-2xl font-bold text-slate-800 mb-6">
+              Update Payment
+            </h2>
+
+            {/* INVOICE DETAILS */}
+            <div className="space-y-3 mb-6">
+
+              <div className="flex justify-between">
+
+                <span className="text-slate-600">
+                  Total Amount
+                </span>
+
+                <span className="font-bold text-blue-700">
+                  ₹ {paymentInvoice.total_amount}
+                </span>
+
+              </div>
+
+              <div className="flex justify-between">
+
+                <span className="text-slate-600">
+                  Already Paid
+                </span>
+
+                <span className="font-bold text-green-700">
+                  ₹ {paymentInvoice.paid_amount}
+                </span>
+
+              </div>
+
+              <div className="flex justify-between">
+
+                <span className="text-slate-600">
+                  Due Amount
+                </span>
+
+                <span className="font-bold text-red-600">
+                  ₹ {paymentInvoice.due_amount}
+                </span>
+
+              </div>
+
+            </div>
+
+            {/* INPUT */}
+            <input
+              type="number"
+              step="0.01"
+              value={paymentAmount}
+              onChange={(e) =>
+                setPaymentAmount(
+                  e.target.value
+                )
+              }
+              placeholder="Enter Payment Amount"
+              className="w-full border border-slate-300 rounded-xl px-4 py-3 mb-6"
+            />
+
+            {/* BUTTON */}
+            <button
+              onClick={handlePaymentUpdate}
+              className="w-full bg-green-600 hover:bg-green-700 text-white py-3 rounded-xl font-bold"
+            >
+              Update Payment
+            </button>
+
+          </div>
+
+        </div>
+
+      )}
 
     </Layout>
   );

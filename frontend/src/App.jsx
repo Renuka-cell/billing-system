@@ -4,6 +4,8 @@ import {
   Route,
 } from "react-router-dom";
 
+import AllInvoices from "./pages/AllInvoices";
+
 import Login from "./pages/Login";
 
 import Dashboard from "./pages/Dashboard";
@@ -58,6 +60,15 @@ function App() {
           element={
             <ProtectedRoute>
               <CreateInvoice />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/all-invoices"
+          element={
+            <ProtectedRoute adminOnly={true}>
+              <AllInvoices />
             </ProtectedRoute>
           }
         />

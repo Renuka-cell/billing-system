@@ -1,5 +1,7 @@
 from django.db import models
 import uuid
+from decimal import Decimal
+
 from django.contrib.auth.models import User
 
 
@@ -25,6 +27,7 @@ class UserProfile(models.Model):
     )
 
     def __str__(self):
+
         return f"{self.user.username} - {self.role}"
 
 
@@ -33,7 +36,9 @@ class UserProfile(models.Model):
 # =========================
 class Customer(models.Model):
 
-    name = models.CharField(max_length=100)
+    name = models.CharField(
+        max_length=100
+    )
 
     mobile = models.CharField(
         max_length=15,
@@ -47,6 +52,7 @@ class Customer(models.Model):
     )
 
     def __str__(self):
+
         return self.name
 
 
@@ -59,6 +65,27 @@ class Invoice(models.Model):
         ('PAID', 'Paid'),
         ('PENDING', 'Pending'),
         ('PARTIAL', 'Partial'),
+    )
+
+    PAYMENT_MODES = (
+        ('Cash', 'Cash'),
+        ('UPI', 'UPI'),
+        ('Card', 'Card'),
+        ('Net Banking', 'Net Banking'),
+    )
+
+    # =========================================
+    # FRAME TYPES
+    # =========================================
+    FRAME_TYPES = (
+        ('Metal', 'Metal'),
+        ('Plastic', 'Plastic'),
+        ('Three-pic', 'Three-pic'),
+        ('Carbon', 'Carbon'),
+        ('Supra', 'Supra'),
+        ('Goggle', 'Goggle'),
+        ('Others', 'Others'),
+        ('Not Required', 'Not Required'),
     )
 
     customer = models.ForeignKey(
@@ -79,18 +106,77 @@ class Invoice(models.Model):
         default=uuid.uuid4
     )
 
-    product_description = models.TextField()
+    # =========================================
+    # FRAME DETAILS
+    # =========================================
+    frame_type = models.CharField(
+        max_length=100,
+        choices=FRAME_TYPES,
+        default='Not Required'
+    )
 
-    quantity = models.IntegerField()
+    frame_quantity = models.IntegerField(
+        default=0
+    )
 
-    rate = models.FloatField()
+    frame_price = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=Decimal('0.00')
+    )
 
-    total_amount = models.FloatField()
+    # =========================================
+    # GLASS DETAILS
+    # =========================================
+    glass_type = models.CharField(
+        max_length=100,
+        blank=True,
+        null=True,
+        default='Not Required'
+    )
 
-    # NEW FIELDS
-    paid_amount = models.FloatField(default=0)
+    glass_quantity = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=Decimal('0.00')
+    )
 
-    due_amount = models.FloatField(default=0)
+    glass_price = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=Decimal('0.00')
+    )
+
+    # =========================================
+    # LENS TYPE
+    # =========================================
+    lens_type = models.CharField(
+        max_length=200,
+        blank=True,
+        null=True,
+        default='Not Required'
+    )
+
+    # =========================================
+    # PAYMENT
+    # =========================================
+    total_amount = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        default=Decimal('0.00')
+    )
+
+    paid_amount = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        default=Decimal('0.00')
+    )
+
+    due_amount = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        default=Decimal('0.00')
+    )
 
     payment_status = models.CharField(
         max_length=20,
@@ -98,6 +184,69 @@ class Invoice(models.Model):
         default='PENDING'
     )
 
+    payment_mode = models.CharField(
+        max_length=30,
+        choices=PAYMENT_MODES,
+        default='Cash'
+    )
+
+    # =========================================
+    # RIGHT EYE
+    # =========================================
+    right_sph = models.CharField(
+        max_length=20,
+        blank=True,
+        null=True
+    )
+
+    right_cyl = models.CharField(
+        max_length=20,
+        blank=True,
+        null=True
+    )
+
+    right_axis = models.CharField(
+        max_length=20,
+        blank=True,
+        null=True
+    )
+
+    right_add = models.CharField(
+        max_length=20,
+        blank=True,
+        null=True
+    )
+
+    # =========================================
+    # LEFT EYE
+    # =========================================
+    left_sph = models.CharField(
+        max_length=20,
+        blank=True,
+        null=True
+    )
+
+    left_cyl = models.CharField(
+        max_length=20,
+        blank=True,
+        null=True
+    )
+
+    left_axis = models.CharField(
+        max_length=20,
+        blank=True,
+        null=True
+    )
+
+    left_add = models.CharField(
+        max_length=20,
+        blank=True,
+        null=True
+    )
+
+    # =========================================
+    # DATES
+    # =========================================
     date = models.DateField(
         auto_now_add=True
     )
@@ -110,26 +259,103 @@ class Invoice(models.Model):
         auto_now=True
     )
 
+    # =========================================
+    # SAVE METHOD
+    # =========================================
     def save(self, *args, **kwargs):
 
-        # Calculate Due Amount
-        self.due_amount = (
-            self.total_amount - self.paid_amount
+        # =====================================
+        # FRAME NOT REQUIRED
+        # =====================================
+        if self.frame_type == "Not Required":
+
+            self.frame_quantity = 0
+            self.frame_price = Decimal('0.00')
+
+        # =====================================
+        # GLASS NOT REQUIRED
+        # =====================================
+        if (
+            self.glass_type == "Not Required"
+            or not self.glass_type
+        ):
+
+            self.glass_quantity = Decimal('0.00')
+            self.glass_price = Decimal('0.00')
+
+        # =====================================
+        # SAFE DECIMAL CONVERSION
+        # =====================================
+        frame_quantity = Decimal(
+            str(self.frame_quantity or 0)
         )
 
-        # Auto Payment Status
+        frame_price = Decimal(
+            str(self.frame_price or 0)
+        )
+
+        glass_quantity = Decimal(
+            str(self.glass_quantity or 0)
+        )
+
+        glass_price = Decimal(
+            str(self.glass_price or 0)
+        )
+
+        paid_amount = Decimal(
+            str(self.paid_amount or 0)
+        )
+
+        # =====================================
+        # TOTALS
+        # =====================================
+        frame_total = (
+            frame_quantity * frame_price
+        )
+
+        glass_total = (
+            glass_quantity * glass_price
+        )
+
+        self.total_amount = (
+            frame_total + glass_total
+        ).quantize(Decimal('0.01'))
+
+        self.paid_amount = (
+            paid_amount
+        ).quantize(Decimal('0.01'))
+
+        self.due_amount = (
+            self.total_amount
+            - self.paid_amount
+        ).quantize(Decimal('0.01'))
+
+        # =====================================
+        # AVOID NEGATIVE DUE
+        # =====================================
+        if self.due_amount < 0:
+
+            self.due_amount = Decimal('0.00')
+
+        # =====================================
+        # PAYMENT STATUS
+        # =====================================
         if self.paid_amount <= 0:
+
             self.payment_status = 'PENDING'
 
         elif self.paid_amount < self.total_amount:
+
             self.payment_status = 'PARTIAL'
 
         else:
+
             self.payment_status = 'PAID'
 
         super().save(*args, **kwargs)
 
     def __str__(self):
+
         return str(self.invoice_number)
 
 
@@ -141,7 +367,12 @@ from django.dispatch import receiver
 
 
 @receiver(post_save, sender=User)
-def create_user_profile(sender, instance, created, **kwargs):
+def create_user_profile(
+    sender,
+    instance,
+    created,
+    **kwargs
+):
 
     if created:
 
