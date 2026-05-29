@@ -6,6 +6,9 @@ import Layout from "../components/Layout";
 
 function CustomerHistory() {
 
+  const [name, setName] =
+  useState("");
+
   const [mobile, setMobile] =
     useState("");
 
@@ -23,39 +26,55 @@ function CustomerHistory() {
   // =====================================
   const handleSearch = async () => {
 
-    try {
+  if (
+    !name.trim() &&
+    !mobile.trim()
+  ) {
 
-      const res = await API.get(
-        `customer-history/${mobile}/`
-      );
+    alert(
+      "Enter customer name or mobile number"
+    );
 
-      setCustomerInfo({
+    return;
+  }
 
-        name:
-          res.data.customer_name,
+  try {
 
-        mobile:
-          res.data.customer_mobile,
+    const res = await API.get(
 
-        email:
-          res.data.customer_email,
-      });
+      `customer-history/?name=${name}&mobile=${mobile}`
 
-      setHistory(
-        res.data.history
-      );
+    );
 
-    } catch (err) {
+    setCustomerInfo({
 
-      console.error(err);
+      name:
+        res.data.customer_name,
 
-      alert("No customer history found");
+      mobile:
+        res.data.customer_mobile,
 
-      setHistory([]);
+      email:
+        res.data.customer_email,
+    });
 
-      setCustomerInfo(null);
-    }
-  };
+    setHistory(
+      res.data.history
+    );
+
+  } catch (err) {
+
+    console.error(err);
+
+    alert(
+      "Customer history not found"
+    );
+
+    setHistory([]);
+
+    setCustomerInfo(null);
+  }
+};
 
   // =====================================
   // STATUS COLORS
@@ -215,8 +234,20 @@ function CustomerHistory() {
             Search Customer
           </h2>
 
-          <div className="flex flex-col md:flex-row gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
+            {/* NAME */}
+            <input
+              type="text"
+              placeholder="Enter customer name"
+              value={name}
+              onChange={(e) =>
+                setName(e.target.value)
+              }
+              className="border border-slate-300 rounded-xl px-4 py-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+
+            {/* MOBILE */}
             <input
               type="text"
               placeholder="Enter mobile number"
@@ -224,7 +255,7 @@ function CustomerHistory() {
               onChange={(e) =>
                 setMobile(e.target.value)
               }
-              className="flex-1 border border-slate-300 rounded-xl px-4 py-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="border border-slate-300 rounded-xl px-4 py-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
 
             <button

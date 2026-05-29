@@ -136,6 +136,45 @@ function InvoiceManagement() {
     }
   };
 
+    // =====================================
+  // DELETE INVOICE
+  // =====================================
+  const deleteInvoice = async (
+    invoiceId
+  ) => {
+
+    const confirmDelete =
+      window.confirm(
+        "Are you sure you want to delete this invoice?"
+      );
+
+    if (!confirmDelete) {
+      return;
+    }
+
+    try {
+
+      await API.delete(
+        `delete-invoice/${invoiceId}/`
+      );
+
+      alert(
+        "Invoice deleted successfully"
+      );
+
+      fetchInvoices();
+
+    } catch (err) {
+
+      console.error(err);
+
+      alert(
+        err?.response?.data?.error ||
+        "Failed to delete invoice"
+      );
+    }
+  };
+
   // =====================================
   // OPEN EDIT MODAL
   // =====================================
@@ -329,6 +368,10 @@ function InvoiceManagement() {
                     </th>
 
                     <th className="px-6 py-4 text-center text-sm font-bold text-slate-700">
+                      Delete
+                    </th>
+
+                    <th className="px-6 py-4 text-center text-sm font-bold text-slate-700">
                       Payment
                     </th>
 
@@ -463,6 +506,21 @@ function InvoiceManagement() {
                           className="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-xl text-sm font-semibold"
                         >
                           Edit
+                        </button>
+
+                      </td>
+
+                      <td className="px-6 py-5 text-center">
+
+                        <button
+                          onClick={() =>
+                            deleteInvoice(
+                              item.invoice_id
+                            )
+                          }
+                          className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-xl text-sm font-semibold"
+                        >
+                          Delete
                         </button>
 
                       </td>

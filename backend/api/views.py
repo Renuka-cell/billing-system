@@ -390,18 +390,49 @@ def create_invoice(request):
 @permission_classes([IsAuthenticated])
 def search_customer(request):
 
-    query = request.GET.get('query')
+    name = request.GET.get(
+        'name',
+        ''
+    ).strip()
 
-    customer = Customer.objects.filter(
-        mobile=query
-    ).first()
+    mobile = request.GET.get(
+        'mobile',
+        ''
+    ).strip()
 
-    if not customer:
+    customer = None
+
+    # =====================================
+    # SEARCH BY BOTH
+    # =====================================
+    if name and mobile:
 
         customer = Customer.objects.filter(
-            name__icontains=query
+            name__icontains=name,
+            mobile=mobile
         ).first()
 
+    # =====================================
+    # SEARCH ONLY BY MOBILE
+    # =====================================
+    elif mobile:
+
+        customer = Customer.objects.filter(
+            mobile=mobile
+        ).first()
+
+    # =====================================
+    # SEARCH ONLY BY NAME
+    # =====================================
+    elif name:
+
+        customer = Customer.objects.filter(
+            name__icontains=name
+        ).first()
+
+    # =====================================
+    # CUSTOMER FOUND
+    # =====================================
     if customer:
 
         return Response({
@@ -416,9 +447,15 @@ def search_customer(request):
                 customer.mobile
         })
 
+    # =====================================
+    # CUSTOMER NOT FOUND
+    # =====================================
     return Response({
-        "message": "Customer not found"
-    })
+
+        "message":
+            "Customer not found"
+
+    }, status=404)
 
 
 # =========================================
@@ -426,17 +463,59 @@ def search_customer(request):
 # =========================================
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-def customer_history(request, mobile):
+def customer_history(request):
 
-    customer = Customer.objects.filter(
-        mobile=mobile
-    ).first()
+    name = request.GET.get(
+        'name',
+        ''
+    ).strip()
 
+    mobile = request.GET.get(
+        'mobile',
+        ''
+    ).strip()
+
+    customer = None
+
+    # =====================================
+    # SEARCH BY BOTH
+    # =====================================
+    if name and mobile:
+
+        customer = Customer.objects.filter(
+            name__icontains=name,
+            mobile=mobile
+        ).first()
+
+    # =====================================
+    # SEARCH ONLY BY MOBILE
+    # =====================================
+    elif mobile:
+
+        customer = Customer.objects.filter(
+            mobile=mobile
+        ).first()
+
+    # =====================================
+    # SEARCH ONLY BY NAME
+    # =====================================
+    elif name:
+
+        customer = Customer.objects.filter(
+            name__icontains=name
+        ).first()
+
+    # =====================================
+    # CUSTOMER NOT FOUND
+    # =====================================
     if not customer:
 
         return Response({
-            "message": "Customer not found"
-        })
+
+            "message":
+                "Customer not found"
+
+        }, status=404)
 
     invoices = Invoice.objects.filter(
         customer=customer
@@ -999,6 +1078,70 @@ def update_invoice(request, invoice_id):
 
         print(
             "UPDATE INVOICE ERROR:",
+            str(e)
+        )
+
+        return Response({
+
+            "error":
+                str(e)
+
+        }, status=400)
+    
+
+# =========================================
+# DELETE INVOICE
+# =========================================
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+@admin_only
+def delete_invoice(request, invoice_id):
+
+    try:
+
+        invoice = Invoice.objects.get(
+            id=invoice_id
+        )
+
+    except Invoice.DoesNotExist:
+
+        return Response({
+
+            "error":
+                "Invoice not found"
+
+        }, status=404)
+
+    try:
+
+        # =====================================
+        # DELETE PDF FILE
+        # =====================================
+        pdf_file = os.path.join(
+            settings.MEDIA_ROOT,
+            f"invoice_{invoice.id}.pdf"
+        )
+
+        if os.path.exists(pdf_file):
+
+            os.remove(pdf_file)
+
+        # =====================================
+        # DELETE INVOICE
+        # =====================================
+        invoice.delete()
+
+        return Response({
+
+            "message":
+                "Invoice deleted successfully"
+
+        })
+
+    except Exception as e:
+
+        print(
+            "DELETE INVOICE ERROR:",
             str(e)
         )
 

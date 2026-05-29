@@ -9,7 +9,8 @@ from .views import (
     download_invoice,
     update_payment,
     all_invoices,
-    update_invoice
+    update_invoice,
+    delete_invoice
 )
 
 urlpatterns = [
@@ -21,7 +22,7 @@ urlpatterns = [
     path('search-customer/', search_customer),
 
     path(
-        'customer-history/<str:mobile>/',
+        'customer-history/',
         customer_history
     ),
 
@@ -51,5 +52,13 @@ urlpatterns = [
     path(
         'update-invoice/<int:invoice_id>/',
         update_invoice
-    )
+    ),
+
+    # =====================================
+    # DELETE INVOICE
+    # =====================================
+    path(
+        'delete-invoice/<int:invoice_id>/',
+        delete_invoice
+    ),
 ]
