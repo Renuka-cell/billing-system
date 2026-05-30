@@ -1,13 +1,14 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import API from "../services/api";
+import toast from "react-hot-toast";
 
 function Login() {
 
   const navigate = useNavigate();
 
   const [form, setForm] = useState({
-    email: "",
+    username: "",
     password: "",
   });
 
@@ -51,7 +52,7 @@ function Login() {
         localStorage.getItem("token")
       );
 
-      alert("Login Successful");
+      toast.success("Login Successful");
 
       // Redirect
       //navigate("/dashboard");
@@ -68,7 +69,7 @@ function Login() {
 
       console.error(err);
 
-      alert(
+      toast.error(
         "Invalid credentials or server error"
       );
     }
@@ -113,17 +114,17 @@ function Login() {
         {/* Form */}
         <div className="space-y-6">
 
-          {/* Email */}
+          {/* Username */}
           <div>
 
             <label className="block text-slate-300 mb-2 text-sm">
-              Email Address
+              Username
             </label>
 
             <input
-              type="email"
-              name="email"
-              placeholder="Enter your email"
+              type="text"
+              name="username"
+              placeholder="Enter your username"
               onChange={handleChange}
               className="w-full bg-white/10 border border-white/10 text-white placeholder:text-slate-400 rounded-2xl px-5 py-4 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30 transition-all duration-300"
             />

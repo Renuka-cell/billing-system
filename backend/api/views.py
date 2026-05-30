@@ -531,34 +531,72 @@ def customer_history(request):
                 inv.id,
 
             "invoice_number":
-                inv.invoice_number,
+                str(inv.invoice_number),
 
             "date":
-                inv.date,
+                str(inv.date),
 
             "frame_type":
-                inv.frame_type,
+                inv.frame_type or "--",
+
+            "frame_quantity":
+                inv.frame_quantity,
+
+            "frame_price":
+                float(inv.frame_price),
 
             "glass_type":
-                inv.glass_type,
+                inv.glass_type or "--",
+
+            "glass_quantity":
+                float(inv.glass_quantity),
+
+            "glass_price":
+                float(inv.glass_price),
 
             "lens_type":
-                inv.lens_type,
+                inv.lens_type or "--",
 
             "total_amount":
-                inv.total_amount,
+                float(inv.total_amount),
 
             "paid_amount":
-                inv.paid_amount,
+                float(inv.paid_amount),
 
             "due_amount":
-                inv.due_amount,
+                float(inv.due_amount),
 
             "payment_status":
                 inv.payment_status,
 
             "payment_mode":
                 inv.payment_mode,
+
+            # RIGHT EYE
+            "right_sph":
+                inv.right_sph or "--",
+
+            "right_cyl":
+                inv.right_cyl or "--",
+
+            "right_axis":
+                inv.right_axis or "--",
+
+            "right_add":
+                inv.right_add or "--",
+
+            # LEFT EYE
+            "left_sph":
+                inv.left_sph or "--",
+
+            "left_cyl":
+                inv.left_cyl or "--",
+
+            "left_axis":
+                inv.left_axis or "--",
+
+            "left_add":
+                inv.left_add or "--",
 
             "download_url":
                 f"/api/download-invoice/{inv.id}/"
@@ -586,12 +624,12 @@ def customer_history(request):
 @api_view(['POST'])
 def login_user(request):
 
-    email = request.data.get('email')
+    username = request.data.get('username')
 
     password = request.data.get('password')
 
-    user = authenticate(
-        username=email,
+    user = authenticate(    
+        username=username,
         password=password
     )
 

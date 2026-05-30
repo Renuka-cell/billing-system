@@ -25,6 +25,14 @@ function AllInvoices() {
     useState(null);
 
   // =====================================
+  // PAGINATION
+  // =====================================
+  const [currentPage, setCurrentPage] =
+    useState(1);
+
+  const recordsPerPage = 10;
+
+  // =====================================
   // FETCH INVOICES
   // =====================================
   const fetchInvoices = async () => {
@@ -62,30 +70,52 @@ function AllInvoices() {
   // =====================================
   useEffect(() => {
 
-    const filtered =
-      invoices.filter((item) =>
+  const filtered =
+    invoices.filter((item) =>
 
-        item.customer_name
-          ?.toLowerCase()
-          .includes(
-            search.toLowerCase()
-          ) ||
+      item.customer_name
+        ?.toLowerCase()
+        .includes(
+          search.toLowerCase()
+        ) ||
 
-        item.customer_mobile
-          ?.includes(search) ||
+      item.customer_mobile
+        ?.includes(search) ||
 
-        item.invoice_number
-          ?.toLowerCase()
-          .includes(
-            search.toLowerCase()
-          )
-      );
-
-    setFilteredInvoices(
-      filtered
+      item.invoice_number
+        ?.toLowerCase()
+        .includes(
+          search.toLowerCase()
+        )
     );
 
-  }, [search, invoices]);
+  setFilteredInvoices(filtered);
+
+  // Reset to first page after search
+  setCurrentPage(1);
+
+}, [search, invoices]);
+
+// =====================================
+// PAGINATION LOGIC
+// =====================================
+const indexOfLastRecord =
+  currentPage * recordsPerPage;
+
+const indexOfFirstRecord =
+  indexOfLastRecord - recordsPerPage;
+
+const currentInvoices =
+  filteredInvoices.slice(
+    indexOfFirstRecord,
+    indexOfLastRecord
+  );
+
+const totalPages =
+  Math.ceil(
+    filteredInvoices.length /
+    recordsPerPage
+  );
 
   return (
 
@@ -185,7 +215,7 @@ function AllInvoices() {
 
               <tbody>
 
-                {filteredInvoices.map(
+                {currentInvoices.map(
                   (invoice, index) => (
 
                     <tr
@@ -194,7 +224,7 @@ function AllInvoices() {
                     >
 
                       <td className="px-4 py-4">
-                        {index + 1}
+                        {indexOfFirstRecord + index + 1}
                       </td>
 
                       <td className="px-4 py-4 font-semibold text-blue-700">
@@ -285,6 +315,42 @@ function AllInvoices() {
             </table>
 
           </div>
+
+        </div>
+
+        {/* PAGINATION */}
+        <div className="flex justify-center items-center gap-4 p-6 border-t">
+
+          <button
+            disabled={currentPage === 1}
+            onClick={() =>
+              setCurrentPage(
+                currentPage - 1
+              )
+            }
+            className="bg-slate-200 px-4 py-2 rounded-lg disabled:opacity-50"
+          >
+            Previous
+          </button>
+
+          <span className="font-semibold">
+            Page {currentPage} of {totalPages}
+          </span>
+
+          <button
+            disabled={
+              currentPage === totalPages ||
+              totalPages === 0
+            }
+            onClick={() =>
+              setCurrentPage(
+                currentPage + 1
+              )
+            }
+            className="bg-slate-200 px-4 py-2 rounded-lg disabled:opacity-50"
+          >
+            Next
+          </button>
 
         </div>
 

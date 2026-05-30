@@ -4,6 +4,8 @@ import API from "../services/api";
 
 import Layout from "../components/Layout";
 
+import toast from "react-hot-toast";
+
 function CustomerHistory() {
 
   const [name, setName] =
@@ -31,7 +33,7 @@ function CustomerHistory() {
     !mobile.trim()
   ) {
 
-    alert(
+    toast.error(
       "Enter customer name or mobile number"
     );
 
@@ -66,7 +68,7 @@ function CustomerHistory() {
 
     console.error(err);
 
-    alert(
+    toast.error(
       "Customer history not found"
     );
 
@@ -125,7 +127,14 @@ function CustomerHistory() {
 
       if (!amount) {
 
-        alert(
+        toast.error("Enter payment amount");
+
+        return;
+      }
+
+      if (Number(amount) <= 0) {
+
+        toast.error(
           "Enter payment amount"
         );
 
@@ -139,7 +148,7 @@ function CustomerHistory() {
         }
       );
 
-      alert(
+      toast.success(
         "Payment updated successfully"
       );
 
@@ -149,7 +158,7 @@ function CustomerHistory() {
 
       console.error(err);
 
-      alert(
+      toast.error(
         "Failed to update payment"
       );
     }
@@ -197,7 +206,7 @@ function CustomerHistory() {
 
       console.error(err);
 
-      alert(
+      toast.error(
         "Failed to download invoice"
       );
     }
@@ -343,15 +352,31 @@ function CustomerHistory() {
                   <tr>
 
                     <th className="px-6 py-4 text-left text-sm font-bold text-slate-700">
+                      Date
+                    </th>
+
+                    <th className="px-6 py-4 text-left text-sm font-bold text-slate-700">
                       Invoice
                     </th>
 
                     <th className="px-6 py-4 text-left text-sm font-bold text-slate-700">
-                      Frame
+                      Frame Type
                     </th>
 
                     <th className="px-6 py-4 text-left text-sm font-bold text-slate-700">
-                      Glass
+                      Frame Price
+                    </th>
+
+                    <th className="px-6 py-4 text-left text-sm font-bold text-slate-700">
+                      Glass Type
+                    </th>
+
+                    <th className="px-6 py-4 text-left text-sm font-bold text-slate-700">
+                      Glass Price
+                    </th>
+
+                    <th className="px-6 py-4 text-left text-sm font-bold text-slate-700">
+                      Eye Description
                     </th>
 
                     <th className="px-6 py-4 text-left text-sm font-bold text-slate-700">
@@ -396,36 +421,62 @@ function CustomerHistory() {
                       className="border-b border-slate-100 hover:bg-slate-50 transition-all duration-200"
                     >
 
-                      {/* INVOICE */}
-                      <td className="px-6 py-5">
+                    {/* DATE */}
+                    <td className="px-6 py-5">
+                      {item.date}
+                    </td>
 
-                        <div className="font-bold text-slate-800">
-                          {item.invoice_number}
-                        </div>
+                    {/* INVOICE */}
+                    <td className="px-6 py-5">
 
-                        <div className="text-sm text-slate-500 mt-1">
-                          {item.date}
-                        </div>
+                      <div className="font-bold text-slate-800">
+                        {item.invoice_number}
+                      </div>
 
-                      </td>
+                    </td>
 
-                      {/* FRAME */}
-                      <td className="px-6 py-5">
+                    {/* FRAME TYPE */}
+                    <td className="px-6 py-5">
+                      {item.frame_type || "N/A"}
+                    </td>
 
-                        <div className="font-medium text-slate-700">
-                          {item.frame_type || "N/A"}
-                        </div>
+                    {/* FRAME PRICE */}
+                    <td className="px-6 py-5">
+                      ₹ {item.frame_price}
+                    </td>
 
-                      </td>
+                    {/* GLASS TYPE */}
+                    <td className="px-6 py-5">
+                      {item.glass_type || "N/A"}
+                    </td>
 
-                      {/* GLASS */}
-                      <td className="px-6 py-5">
+                    {/* GLASS PRICE */}
+                    <td className="px-6 py-5">
+                      ₹ {item.glass_price}
+                    </td>
 
-                        <div className="font-medium text-slate-700">
-                          {item.glass_type || "N/A"}
-                        </div>
+                    {/* EYE DESCRIPTION */}
+                    <td className="px-6 py-5">
 
-                      </td>
+                      <div className="text-xs whitespace-pre-line">
+
+                        RE:
+                        {item.right_sph || "-"} /
+                        {item.right_cyl || "-"} /
+                        {item.right_axis || "-"} /
+                        {item.right_add || "-"}
+
+                        {"\n"}
+
+                        LE:
+                        {item.left_sph || "-"} /
+                        {item.left_cyl || "-"} /
+                        {item.left_axis || "-"} /
+                        {item.left_add || "-"}
+
+                      </div>
+
+                    </td>
 
                       {/* TOTAL */}
                       <td className="px-6 py-5">

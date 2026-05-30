@@ -1,6 +1,7 @@
 import { useState } from "react";
 import API from "../services/api";
 import Layout from "../components/Layout";
+import toast from "react-hot-toast";
 
 function CreateInvoice() {
 
@@ -66,6 +67,9 @@ function CreateInvoice() {
 
   const [pdfUrl, setPdfUrl] =
     useState("");
+
+  const [errors, setErrors] =
+    useState({});
 
   // =====================================
   // HANDLE CHANGE
@@ -154,7 +158,7 @@ function CreateInvoice() {
 
     if (!form.mobile) {
 
-      alert("Enter mobile number");
+      toast.error("Enter mobile number");
 
       return;
     }
@@ -162,7 +166,7 @@ function CreateInvoice() {
     try {
 
       const res = await API.get(
-        `search-customer/?query=${form.mobile}`
+        `search-customer/?mobile=${form.mobile}`
       );
 
       setForm((prev) => ({
@@ -174,13 +178,13 @@ function CreateInvoice() {
         email: res.data.email || "",
       }));
 
-      alert("Customer Found");
+      toast.success("Customer found");
 
     } catch (err) {
 
       console.error(err);
 
-      alert("Customer not found");
+      toast.success("Customer Found");
     }
   };
 
@@ -189,71 +193,136 @@ function CreateInvoice() {
   // =====================================
   const validateForm = () => {
 
-    const mobileRegex =
-      /^[0-9]{10}$/;
+  let newErrors = {};
+
+  // ==========================
+  // NAME VALIDATION
+  // ==========================
+  if (!form.name.trim()) {
+
+    newErrors.name =
+      "Customer name is required";
+  }
+
+  // ==========================
+  // MOBILE VALIDATION
+  // ==========================
+  const mobileRegex =
+    /^[0-9]{10}$/;
+
+  if (
+    !form.mobile.trim()
+  ) {
+
+    newErrors.mobile =
+      "Mobile number is required";
+
+  } else if (
+    !mobileRegex.test(form.mobile)
+  ) {
+
+    newErrors.mobile =
+      "Mobile number must be exactly 10 digits";
+  }
+
+  // ==========================
+  // EMAIL VALIDATION
+  // ==========================
+  const emailRegex =
+    /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  if (
+    !form.email.trim()
+  ) {
+
+    newErrors.email =
+      "Email is required";
+
+  } else if (
+    !emailRegex.test(form.email)
+  ) {
+
+    newErrors.email =
+      "Please enter a valid email";
+  }
+
+  // ==========================
+  // FRAME VALIDATION
+  // ==========================
+  if (
+    form.frame_type !==
+      "Not Required"
+  ) {
 
     if (
-      !mobileRegex.test(form.mobile)
+      !form.frame_price ||
+      Number(form.frame_price) <= 0
     ) {
 
-      alert(
-        "Mobile number must be exactly 10 digits"
-      );
-
-      return false;
-    }
-
-    const emailRegex =
-      /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-    if (
-      !emailRegex.test(form.email)
-    ) {
-
-      alert(
-        "Please enter valid email"
-      );
-
-      return false;
-    }
-
-    if (!form.name.trim()) {
-
-      alert(
-        "Customer name is required"
-      );
-
-      return false;
+      newErrors.frame_price =
+        "Valid frame price required";
     }
 
     if (
-      form.frame_type !==
-        "Not Required" &&
-      !form.frame_price
+      !form.frame_quantity ||
+      Number(form.frame_quantity) <= 0
     ) {
 
-      alert(
-        "Frame price is required"
-      );
+      newErrors.frame_quantity =
+        "Valid frame quantity required";
+    }
+  }
 
-      return false;
+  // ==========================
+  // GLASS VALIDATION
+  // ==========================
+  if (
+    form.glass_type &&
+    form.glass_type !==
+      "Not Required"
+  ) {
+
+    if (
+      !form.glass_price ||
+      Number(form.glass_price) <= 0
+    ) {
+
+      newErrors.glass_price =
+        "Valid glass price required";
     }
 
     if (
-      form.glass_type !==
-        "Not Required" &&
-      !form.glass_price
+      !form.glass_quantity ||
+      Number(form.glass_quantity) <= 0
     ) {
 
-      alert(
-        "Glass price is required"
-      );
-
-      return false;
+      newErrors.glass_quantity =
+        "Valid glass quantity required";
     }
+  }
 
-    return true;
-  };
+  // ==========================
+  // PAID AMOUNT VALIDATION
+  // ==========================
+  if (
+    form.paid_amount &&
+    Number(form.paid_amount) < 0
+  ) {
+
+    newErrors.paid_amount =
+      "Amount cannot be negative";
+  }
+
+  // ==========================
+  // SAVE ERRORS
+  // ==========================
+  setErrors(newErrors);
+
+  return (
+    Object.keys(newErrors)
+      .length === 0
+  );
+};
 
   // =====================================
   // CREATE INVOICE
@@ -301,7 +370,7 @@ function CreateInvoice() {
         payload
       );
 
-      alert(
+      toast.success(
         "Invoice Created Successfully"
       );
 
@@ -313,7 +382,7 @@ function CreateInvoice() {
 
       console.error(err);
 
-      alert(
+      toast.error(
         err?.response?.data?.error ||
         "Error creating invoice"
       );
@@ -404,8 +473,18 @@ function CreateInvoice() {
                 value={form.name}
                 onChange={handleChange}
                 placeholder="Customer Name"
-                className="w-full border border-slate-300 rounded-xl px-4 py-3"
+                className={`w-full border rounded-xl px-4 py-3 ${
+                  errors.name
+                    ? "border-red-500"
+                    : "border-slate-300"
+                }`}
               />
+
+              {errors.name && (
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.name}
+                </p>
+              )}
 
             </div>
 
@@ -418,12 +497,16 @@ function CreateInvoice() {
               <div className="flex gap-3">
 
                 <input
-                  type="text"
-                  name="mobile"
-                  value={form.mobile}
-                  onChange={handleChange}
-                  placeholder="10 digits number only"
-                  className="flex-1 border border-slate-300 rounded-xl px-4 py-3"
+                    type="text"
+                    name="mobile"
+                    value={form.mobile}
+                    onChange={handleChange}
+                    placeholder="10 digits number only"
+                    className={`flex-1 rounded-xl px-4 py-3 border ${
+                    errors.mobile
+                      ? "border-red-500"
+                      : "border-slate-300"
+                  }`}
                 />
 
                 <button
@@ -435,6 +518,14 @@ function CreateInvoice() {
                 </button>
 
               </div>
+
+              {errors.mobile && (
+
+                <p className="text-red-500 text-sm mt-2">
+                  {errors.mobile}
+                </p>
+
+              )}
 
             </div>
 
@@ -450,8 +541,18 @@ function CreateInvoice() {
                 value={form.email}
                 onChange={handleChange}
                 placeholder="Customer's Email ID"
-                className="w-full border border-slate-300 rounded-xl px-4 py-3"
+                className={`w-full border rounded-xl px-4 py-3 ${
+                  errors.email
+                    ? "border-red-500"
+                    : "border-slate-300"
+                }`}
               />
+
+              {errors.email && (
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.email}
+                </p>
+              )}
 
             </div>
 
@@ -513,8 +614,18 @@ function CreateInvoice() {
                   form.frame_type ===
                   "Not Required"
                 }
-                className="border border-slate-300 rounded-xl px-4 py-3 disabled:bg-slate-100"
+                className={`border rounded-xl px-4 py-3 disabled:bg-slate-100 ${
+                  errors.frame_quantity
+                    ? "border-red-500"
+                    : "border-slate-300"
+                }`}
               />
+
+              {errors.frame_quantity && (
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.frame_quantity}
+                </p>
+              )}
 
               <input
                 type="text"
@@ -527,8 +638,18 @@ function CreateInvoice() {
                   form.frame_type ===
                   "Not Required"
                 }
-                className="border border-slate-300 rounded-xl px-4 py-3 disabled:bg-slate-100"
+                className={`border rounded-xl px-4 py-3 disabled:bg-slate-100 ${
+                  errors.frame_price
+                    ? "border-red-500"
+                    : "border-slate-300"
+                }`}
               />
+
+              {errors.frame_price && (
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.frame_price}
+                </p>
+              )}
 
             </div>
 
@@ -586,8 +707,18 @@ function CreateInvoice() {
                   form.glass_type ===
                   "Not Required"
                 }
-                className="border border-slate-300 rounded-xl px-4 py-3 disabled:bg-slate-100"
+                className={`border rounded-xl px-4 py-3 disabled:bg-slate-100 ${
+                  errors.glass_quantity
+                    ? "border-red-500"
+                    : "border-slate-300"
+                }`}
               />
+
+              {errors.glass_quantity && (
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.glass_quantity}
+                </p>
+              )}
 
               <input
                 type="text"
@@ -600,8 +731,18 @@ function CreateInvoice() {
                   form.glass_type ===
                   "Not Required"
                 }
-                className="border border-slate-300 rounded-xl px-4 py-3 disabled:bg-slate-100"
+                className={`border rounded-xl px-4 py-3 disabled:bg-slate-100 ${
+                  errors.glass_price
+                    ? "border-red-500"
+                    : "border-slate-300"
+                }`}
               />
+
+              {errors.glass_price && (
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.glass_price}
+                </p>
+              )}
 
             </div>
 
@@ -661,8 +802,18 @@ function CreateInvoice() {
                 value={form.paid_amount}
                 onChange={handleChange}
                 placeholder="Paid Amount"
-                className="border border-slate-300 rounded-xl px-4 py-3"
+                className={`border rounded-xl px-4 py-3 ${
+                  errors.paid_amount
+                    ? "border-red-500"
+                    : "border-slate-300"
+                }`}
               />
+
+              {errors.paid_amount && (
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.paid_amount}
+                </p>
+              )}
 
               <select
                 name="payment_mode"

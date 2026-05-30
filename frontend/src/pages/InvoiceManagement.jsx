@@ -6,6 +6,8 @@ import Layout from "../components/Layout";
 
 import EditInvoiceModal from "../components/EditInvoiceModal";
 
+import toast from "react-hot-toast";
+
 function InvoiceManagement() {
 
   const [invoices, setInvoices] =
@@ -28,6 +30,14 @@ function InvoiceManagement() {
 
   const [paymentAmount, setPaymentAmount] =
     useState("");
+
+  // =====================================
+  // PAGINATION
+  // =====================================
+  const [currentPage, setCurrentPage] =
+    useState(1);
+
+  const recordsPerPage = 10;
 
   // =====================================
   // FETCH ALL INVOICES
@@ -58,7 +68,7 @@ function InvoiceManagement() {
 
       console.error(err);
 
-      alert("Failed to load invoices");
+      toast.error("Failed to load invoices");
 
     } finally {
 
@@ -71,6 +81,27 @@ function InvoiceManagement() {
     fetchInvoices();
 
   }, []);
+
+  // =====================================
+  // PAGINATION LOGIC
+  // =====================================
+  const indexOfLastRecord =
+    currentPage * recordsPerPage;
+
+  const indexOfFirstRecord =
+    indexOfLastRecord - recordsPerPage;
+
+  const currentInvoices =
+    invoices.slice(
+      indexOfFirstRecord,
+      indexOfLastRecord
+    );
+
+  const totalPages =
+    Math.ceil(
+      invoices.length /
+      recordsPerPage
+    );
 
   // =====================================
   // STATUS COLORS
@@ -132,7 +163,7 @@ function InvoiceManagement() {
 
       console.error(err);
 
-      alert("Failed to download invoice");
+      toast.error("Failed to download invoice");
     }
   };
 
@@ -158,7 +189,7 @@ function InvoiceManagement() {
         `delete-invoice/${invoiceId}/`
       );
 
-      alert(
+      toast.success(
         "Invoice deleted successfully"
       );
 
@@ -168,7 +199,7 @@ function InvoiceManagement() {
 
       console.error(err);
 
-      alert(
+      toast.error(
         err?.response?.data?.error ||
         "Failed to delete invoice"
       );
@@ -209,9 +240,7 @@ function InvoiceManagement() {
         Number(paymentAmount) <= 0
       ) {
 
-        alert(
-          "Enter valid payment amount"
-        );
+        toast.error("Enter valid payment amount");
 
         return;
       }
@@ -224,9 +253,7 @@ function InvoiceManagement() {
         }
       );
 
-      alert(
-        "Payment Updated Successfully"
-      );
+      toast.success("Payment Updated Successfully"  );
 
       setPaymentModal(false);
 
@@ -238,7 +265,7 @@ function InvoiceManagement() {
 
       console.error(err);
 
-      alert(
+      toast.error(
         err?.response?.data?.error ||
         "Failed to update payment"
       );
@@ -320,66 +347,78 @@ function InvoiceManagement() {
                   <tr>
 
                     <th className="px-6 py-4 text-left text-sm font-bold text-slate-700">
-                      Invoice
+                        Date
                     </th>
 
                     <th className="px-6 py-4 text-left text-sm font-bold text-slate-700">
-                      Customer
+                        Invoice
                     </th>
 
                     <th className="px-6 py-4 text-left text-sm font-bold text-slate-700">
-                      Frame
+                        Customer
                     </th>
 
                     <th className="px-6 py-4 text-left text-sm font-bold text-slate-700">
-                      Glass
+                        Frame Type
                     </th>
 
                     <th className="px-6 py-4 text-left text-sm font-bold text-slate-700">
-                      Date
+                        Frame Price
                     </th>
 
                     <th className="px-6 py-4 text-left text-sm font-bold text-slate-700">
-                      Total
+                        Glass Type
                     </th>
 
                     <th className="px-6 py-4 text-left text-sm font-bold text-slate-700">
-                      Paid
+                        Glass Price
                     </th>
 
                     <th className="px-6 py-4 text-left text-sm font-bold text-slate-700">
-                      Due
+                        Eye Description
                     </th>
 
                     <th className="px-6 py-4 text-left text-sm font-bold text-slate-700">
-                      Payment
+                        Total
                     </th>
 
                     <th className="px-6 py-4 text-left text-sm font-bold text-slate-700">
-                      Status
+                        Paid
                     </th>
 
                     <th className="px-6 py-4 text-left text-sm font-bold text-slate-700">
-                      Created By
+                        Due
+                    </th>
+
+                    <th className="px-6 py-4 text-left text-sm font-bold text-slate-700">
+                        Payment Mode
+                    </th>
+
+                    <th className="px-6 py-4 text-left text-sm font-bold text-slate-700">
+                        Status
+                    </th>
+
+                    <th className="px-6 py-4 text-left text-sm font-bold text-slate-700">
+                        Created By
                     </th>
 
                     <th className="px-6 py-4 text-center text-sm font-bold text-slate-700">
-                      Edit
+                        Edit
                     </th>
 
                     <th className="px-6 py-4 text-center text-sm font-bold text-slate-700">
-                      Delete
+                        Delete
                     </th>
 
                     <th className="px-6 py-4 text-center text-sm font-bold text-slate-700">
-                      Payment
+                        Payment
                     </th>
 
                     <th className="px-6 py-4 text-center text-sm font-bold text-slate-700">
-                      PDF
+                        PDF
                     </th>
 
-                  </tr>
+                    </tr>
 
                 </thead>
 
@@ -388,25 +427,26 @@ function InvoiceManagement() {
                 {/* ===================================== */}
                 <tbody>
 
-                  {invoices.map((item) => (
+                  {currentInvoices.map((item) => (
 
                     <tr
                       key={item.invoice_id}
                       className="border-b border-slate-100 hover:bg-slate-50 transition-all duration-200"
                     >
+                      {/* DATE */}
+                      <td className="px-6 py-5 text-slate-700">
+                        {item.date}
+                      </td>
 
                       {/* INVOICE */}
                       <td className="px-6 py-5">
-
                         <div className="font-bold text-slate-800">
                           {item.invoice_number}
                         </div>
-
                       </td>
 
                       {/* CUSTOMER */}
                       <td className="px-6 py-5">
-
                         <div className="font-semibold text-slate-800">
                           {item.customer_name}
                         </div>
@@ -414,134 +454,123 @@ function InvoiceManagement() {
                         <div className="text-sm text-slate-500 mt-1">
                           {item.customer_mobile}
                         </div>
-
                       </td>
 
-                      {/* FRAME */}
+                      {/* FRAME TYPE */}
                       <td className="px-6 py-5">
-
-                        <div className="font-medium text-slate-700">
-                          {item.frame_type || "N/A"}
-                        </div>
-
+                        {item.frame_type || "N/A"}
                       </td>
 
-                      {/* GLASS */}
+                      {/* FRAME PRICE */}
                       <td className="px-6 py-5">
-
-                        <div className="font-medium text-slate-700">
-                          {item.glass_type || "N/A"}
-                        </div>
-
+                        ₹ {item.frame_price}
                       </td>
 
-                      {/* DATE */}
-                      <td className="px-6 py-5 text-slate-700">
-                        {item.date}
+                      {/* GLASS TYPE */}
+                      <td className="px-6 py-5">
+                        {item.glass_type || "N/A"}
+                      </td>
+
+                      {/* GLASS PRICE */}
+                      <td className="px-6 py-5">
+                        ₹ {item.glass_price}
+                      </td>
+
+                      {/* EYE DESCRIPTION */}
+                      <td className="px-6 py-5">
+                        <div className="text-xs whitespace-pre-line">
+                          RE:
+                          {item.right_sph || "-"} /
+                          {item.right_cyl || "-"} /
+                          {item.right_axis || "-"} /
+                          {item.right_add || "-"}
+
+                          {"\n"}
+
+                          LE:
+                          {item.left_sph || "-"} /
+                          {item.left_cyl || "-"} /
+                          {item.left_axis || "-"} /
+                          {item.left_add || "-"}
+                        </div>
                       </td>
 
                       {/* TOTAL */}
                       <td className="px-6 py-5">
-
                         <span className="font-bold text-blue-700">
                           ₹ {item.total_amount}
                         </span>
-
                       </td>
 
                       {/* PAID */}
                       <td className="px-6 py-5">
-
                         <span className="font-bold text-green-700">
                           ₹ {item.paid_amount}
                         </span>
-
                       </td>
 
                       {/* DUE */}
                       <td className="px-6 py-5">
-
                         <span className="font-bold text-red-600">
                           ₹ {item.due_amount}
                         </span>
-
                       </td>
 
                       {/* PAYMENT MODE */}
                       <td className="px-6 py-5">
-
                         <span className="bg-slate-100 text-slate-700 px-3 py-2 rounded-xl text-sm font-semibold">
                           {item.payment_mode}
                         </span>
-
                       </td>
 
                       {/* STATUS */}
                       <td className="px-6 py-5">
-
                         <span
                           className={`px-4 py-2 rounded-xl text-sm font-semibold ${getStatusStyle(item.payment_status)}`}
                         >
                           {item.payment_status}
                         </span>
-
                       </td>
 
                       {/* CREATED BY */}
                       <td className="px-6 py-5">
-
                         <div className="font-medium text-slate-700">
                           {item.created_by}
                         </div>
-
                       </td>
 
                       {/* EDIT */}
                       <td className="px-6 py-5 text-center">
-
                         <button
-                          onClick={() =>
-                            openEditModal(item)
-                          }
+                          onClick={() => openEditModal(item)}
                           className="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-xl text-sm font-semibold"
                         >
                           Edit
                         </button>
-
                       </td>
 
+                      {/* DELETE */}
                       <td className="px-6 py-5 text-center">
-
                         <button
-                          onClick={() =>
-                            deleteInvoice(
-                              item.invoice_id
-                            )
-                          }
+                          onClick={() => deleteInvoice(item.invoice_id)}
                           className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-xl text-sm font-semibold"
                         >
                           Delete
                         </button>
-
                       </td>
 
                       {/* PAYMENT UPDATE */}
                       <td className="px-6 py-5 text-center">
-
                         <button
-                          onClick={() =>
-                            openPaymentModal(item)
-                          }
+                          onClick={() => openPaymentModal(item)}
                           className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-xl text-sm font-semibold"
                         >
                           Update Payment
                         </button>
-
                       </td>
 
                       {/* DOWNLOAD */}
                       <td className="px-6 py-5 text-center">
-
                         <button
                           onClick={() =>
                             downloadInvoice(
@@ -553,7 +582,6 @@ function InvoiceManagement() {
                         >
                           Download
                         </button>
-
                       </td>
 
                     </tr>
@@ -563,6 +591,41 @@ function InvoiceManagement() {
                 </tbody>
 
               </table>
+
+              {/* PAGINATION */}
+              <div className="flex justify-center items-center gap-4 p-6 border-t">
+
+                <button
+                  disabled={currentPage === 1}
+                  onClick={() =>
+                    setCurrentPage(
+                      currentPage - 1
+                    )
+                  }
+                  className="bg-slate-200 px-4 py-2 rounded-lg disabled:opacity-50"
+                >
+                  Previous
+                </button>
+
+                <span className="font-semibold">
+                  Page {currentPage} of {totalPages}
+                </span>
+
+                <button
+                  disabled={
+                    currentPage === totalPages
+                  }
+                  onClick={() =>
+                    setCurrentPage(
+                      currentPage + 1
+                    )
+                  }
+                  className="bg-slate-200 px-4 py-2 rounded-lg disabled:opacity-50"
+                >
+                  Next
+                </button>
+
+              </div>
 
             </div>
 
