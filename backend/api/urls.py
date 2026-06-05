@@ -10,7 +10,10 @@ from .views import (
     update_payment,
     all_invoices,
     update_invoice,
-    delete_invoice
+    delete_invoice,
+    create_staff,
+    staff_list,
+    delete_staff
 )
 
 urlpatterns = [
@@ -60,5 +63,24 @@ urlpatterns = [
     path(
         'delete-invoice/<int:invoice_id>/',
         delete_invoice
+    ),
+
+    # =====================================
+    # STAFF MANAGEMENT
+    # =====================================
+
+    path(
+        'create-staff/',
+        create_staff
+    ),
+
+    path(
+        'staff-list/',
+        staff_list
+    ),
+
+    path(
+        'delete-staff/<int:user_id>/',
+        delete_staff
     ),
 ]

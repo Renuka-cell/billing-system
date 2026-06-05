@@ -25,6 +25,11 @@ from decimal import Decimal
 
 from django.db.models import Sum
 
+from django.contrib.auth.models import User
+from .models import UserProfile
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from rest_framework import status
 
 # =========================================
 # ADMIN DASHBOARD
@@ -1189,3 +1194,150 @@ def delete_invoice(request, invoice_id):
                 str(e)
 
         }, status=400)
+    
+
+
+@api_view(['POST'])
+def create_staff(request):
+
+    try:
+
+        if (
+            not hasattr(request.user, "userprofile")
+            or request.user.userprofile.role != "admin"
+        ):
+            return Response(
+                {"error": "Admin access required"},
+                status=403
+            )
+
+        username = request.data.get("username")
+        password = request.data.get("password")
+
+        if not username or not password:
+
+            return Response(
+                {"error": "Username and Password required"},
+                status=400
+            )
+
+        if User.objects.filter(
+            username=username
+        ).exists():
+
+            return Response(
+                {"error": "Username already exists"},
+                status=400
+            )
+
+        user = User.objects.create_user(
+            username=username,
+            password=password
+        )
+
+        profile = user.userprofile
+
+        profile.role = "staff"
+
+        profile.save()
+
+        return Response({
+            "message":
+            "Staff created successfully"
+        })
+
+    except Exception as e:
+
+        return Response(
+            {"error": str(e)},
+            status=500
+        )
+    
+
+@api_view(['GET'])
+def staff_list(request):
+
+    try:
+
+        if (
+            not hasattr(request.user, "userprofile")
+            or request.user.userprofile.role != "admin"
+        ):
+            return Response(
+                {"error": "Admin access required"},
+                status=403
+            )
+
+        staff_users = UserProfile.objects.filter(
+            role="staff"
+        )
+
+        data = []
+
+        for staff in staff_users:
+
+            data.append({
+                "id": staff.user.id,
+                "username": staff.user.username,
+                "role": staff.role
+            })
+
+        return Response(data)
+
+    except Exception as e:
+
+        return Response(
+            {"error": str(e)},
+            status=500
+        )
+    
+
+@api_view(['DELETE'])
+def delete_staff(request, user_id):
+
+    try:
+
+        if (
+            not hasattr(request.user, "userprofile")
+            or request.user.userprofile.role != "admin"
+        ):
+            return Response(
+                {"error": "Admin access required"},
+                status=403
+            )
+
+        user = User.objects.get(
+            id=user_id
+        )
+
+        if (
+            hasattr(user, "userprofile")
+            and user.userprofile.role == "admin"
+        ):
+            return Response(
+                {"error": "Cannot delete admin"},
+                status=400
+            )
+
+        user.delete()
+
+        return Response({
+            "message":
+            "Staff deleted successfully"
+        })
+
+    except User.DoesNotExist:
+
+        return Response(
+            {"error": "User not found"},
+            status=404
+        )
+
+    except Exception as e:
+
+        return Response(
+            {"error": str(e)},
+            status=500
+        )
+    
+

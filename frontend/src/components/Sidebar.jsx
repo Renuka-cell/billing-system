@@ -4,6 +4,7 @@ import {
   Search,
   History,
   ClipboardList,
+  Users,
   LogOut,
   X,
 } from "lucide-react";
@@ -66,6 +67,12 @@ function Sidebar({
       path: "/customer-history",
       icon: <History size={20} />,
     },
+
+    {
+      name: "Staff Management",
+      path: "/staff-management",
+      icon: <Users size={20} />,
+    },
   ];
 
   const staffMenu = [
@@ -121,7 +128,8 @@ function Sidebar({
 
       {/* SIDEBAR */}
       <div
-        className={`fixed md:static z-50 top-0 left-0 h-full
+        className={`fixed md:static z-50 top-0 left-0
+        h-screen overflow-y-auto
         w-72 bg-slate-950 text-white flex flex-col shadow-2xl
         transform transition-transform duration-300
         ${
@@ -161,7 +169,7 @@ function Sidebar({
         </div>
 
         {/* NAVIGATION */}
-        <div className="flex-1 p-5 space-y-3">
+        <div className="flex-1 overflow-y-auto p-5 space-y-3">
 
           {menuItems.map((item) => {
 

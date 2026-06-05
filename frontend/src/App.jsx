@@ -20,6 +20,8 @@ import CustomerHistory from "./pages/CustomerHistory";
 
 import ProtectedRoute from "./components/ProtectedRoute";
 
+import StaffManagement from "./pages/StaffManagement";
+
 function App() {
 
   return (
@@ -87,6 +89,15 @@ function App() {
           element={
             <ProtectedRoute>
               <CustomerHistory />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/staff-management"
+          element={
+            <ProtectedRoute adminOnly={true}>
+              <StaffManagement />
             </ProtectedRoute>
           }
         />
