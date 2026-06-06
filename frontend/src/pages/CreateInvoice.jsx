@@ -313,15 +313,31 @@ function CreateInvoice() {
       "Amount cannot be negative";
   }
 
+  else if(
+    form.paid_amount &&
+    Number(form.paid_amount) > total
+  ){
+    newErrors.paid_amount =
+      "Amount cannot be greater than total";
+  }
+
   // ==========================
   // SAVE ERRORS
   // ==========================
   setErrors(newErrors);
 
-  return (
-    Object.keys(newErrors)
-      .length === 0
-  );
+  if (
+    Object.keys(newErrors).length > 0
+  ) {
+
+    toast.error(
+      Object.values(newErrors)[0]
+    );
+
+    return false;
+  }
+
+  return true;
 };
 
   // =====================================

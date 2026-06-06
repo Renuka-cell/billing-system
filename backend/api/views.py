@@ -1341,3 +1341,128 @@ def delete_staff(request, user_id):
         )
     
 
+@api_view(['PUT'])
+def update_staff(request, user_id):
+
+    try:
+
+        if (
+            not hasattr(request.user, "userprofile")
+            or request.user.userprofile.role != "admin"
+        ):
+            return Response(
+                {"error": "Admin access required"},
+                status=403
+            )
+
+        user = User.objects.get(
+            id=user_id
+        )
+
+        username = request.data.get(
+            "username"
+        )
+
+        if not username:
+
+            return Response(
+                {"error": "Username required"},
+                status=400
+            )
+
+        existing_user = User.objects.filter(
+            username=username
+        ).exclude(
+            id=user_id
+        )
+
+        if existing_user.exists():
+
+            return Response(
+                {
+                    "error":
+                    "Username already exists"
+                },
+                status=400
+            )
+
+        user.username = username
+
+        user.save()
+
+        return Response({
+            "message":
+            "Staff updated successfully"
+        })
+
+    except User.DoesNotExist:
+
+        return Response(
+            {"error": "User not found"},
+            status=404
+        )
+
+    except Exception as e:
+
+        return Response(
+            {"error": str(e)},
+            status=500
+        )
+    
+
+@api_view(['PUT'])
+def reset_staff_password(
+    request,
+    user_id
+):
+
+    try:
+
+        if (
+            not hasattr(request.user, "userprofile")
+            or request.user.userprofile.role != "admin"
+        ):
+            return Response(
+                {"error": "Admin access required"},
+                status=403
+            )
+
+        user = User.objects.get(
+            id=user_id
+        )
+
+        new_password = request.data.get(
+            "password"
+        )
+
+        if not new_password:
+
+            return Response(
+                {"error": "Password required"},
+                status=400
+            )
+
+        user.set_password(
+            new_password
+        )
+
+        user.save()
+
+        return Response({
+            "message":
+            "Password updated successfully"
+        })
+
+    except User.DoesNotExist:
+
+        return Response(
+            {"error": "User not found"},
+            status=404
+        )
+
+    except Exception as e:
+
+        return Response(
+            {"error": str(e)},
+            status=500
+        )

@@ -14,6 +14,18 @@ function StaffManagement() {
   const [password, setPassword] =
     useState("");
 
+  const [editingStaff, setEditingStaff] =
+    useState(null);
+
+  const [editUsername, setEditUsername] =
+    useState("");
+
+  const [resetStaff, setResetStaff] =
+    useState(null);
+
+  const [newPassword, setNewPassword] =
+    useState("");
+
   // ==========================
   // FETCH STAFF
   // ==========================
@@ -115,6 +127,68 @@ function StaffManagement() {
       toast.error(
         err?.response?.data?.error ||
         "Delete failed"
+      );
+    }
+  };
+
+  const updateStaff = async () => {
+
+    try {
+
+      await API.put(
+        `update-staff/${editingStaff.id}/`,
+        {
+          username: editUsername,
+        }
+      );
+
+      toast.success(
+        "Staff updated successfully"
+      );
+
+      setEditingStaff(null);
+
+      setEditUsername("");
+
+      fetchStaff();
+
+    } catch (err) {
+
+      console.error(err);
+
+      toast.error(
+        err?.response?.data?.error ||
+        "Update failed"
+      );
+    }
+  };
+
+  const resetPassword = async () => {
+
+    try {
+
+      await API.put(
+        `reset-staff-password/${resetStaff.id}/`,
+        {
+          password: newPassword,
+        }
+      );
+
+      toast.success(
+        "Password reset successfully"
+      );
+
+      setResetStaff(null);
+
+      setNewPassword("");
+
+    } catch (err) {
+
+      console.error(err);
+
+      toast.error(
+        err?.response?.data?.error ||
+        "Password reset failed"
       );
     }
   };
@@ -236,16 +310,52 @@ function StaffManagement() {
 
                     <td className="px-5 py-4 text-center">
 
-                      <button
-                        onClick={() =>
-                          deleteStaff(
-                            staff.id
-                          )
-                        }
-                        className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-xl"
-                      >
-                        Delete
-                      </button>
+                      <div className="flex justify-center gap-2 flex-wrap">
+
+                        <button
+                          onClick={() => {
+
+                            setEditingStaff(
+                              staff
+                            );
+
+                            setEditUsername(
+                              staff.username
+                            );
+
+                          }}
+                          className="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-xl"
+                        >
+                          Edit
+                        </button>
+
+                        <button
+                          onClick={() => {
+
+                            setResetStaff(
+                              staff
+                            );
+
+                            setNewPassword("");
+
+                          }}
+                          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl"
+                        >
+                          Reset Password
+                        </button>
+
+                        <button
+                          onClick={() =>
+                            deleteStaff(
+                              staff.id
+                            )
+                          }
+                          className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-xl"
+                        >
+                          Delete
+                        </button>
+
+                      </div>
 
                     </td>
 
@@ -261,7 +371,110 @@ function StaffManagement() {
 
       </div>
 
+      {
+        editingStaff && (
+
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+
+            <div className="bg-white rounded-2xl p-6 w-full max-w-md">
+
+              <h2 className="text-xl font-bold mb-4">
+                Edit Staff
+              </h2>
+
+              <input
+                type="text"
+                value={editUsername}
+                onChange={(e) =>
+                  setEditUsername(
+                    e.target.value
+                  )
+                }
+                className="w-full border rounded-xl p-3"
+              />
+
+              <div className="flex justify-end gap-3 mt-5">
+
+                <button
+                  onClick={() =>
+                    setEditingStaff(
+                      null
+                    )
+                  }
+                  className="bg-gray-400 text-white px-4 py-2 rounded-xl"
+                >
+                  Cancel
+                </button>
+
+                <button
+                  onClick={updateStaff}
+                  className="bg-blue-600 text-white px-4 py-2 rounded-xl"
+                >
+                  Save
+                </button>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        )
+      }
+
+      {
+        resetStaff && (
+
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+
+            <div className="bg-white rounded-2xl p-6 w-full max-w-md">
+
+              <h2 className="text-xl font-bold mb-4">
+                Reset Password
+              </h2>
+
+              <input
+                type="password"
+                placeholder="Enter New Password"
+                value={newPassword}
+                onChange={(e) =>
+                  setNewPassword(
+                    e.target.value
+                  )
+                }
+                className="w-full border rounded-xl p-3"
+              />
+
+              <div className="flex justify-end gap-3 mt-5">
+
+                <button
+                  onClick={() =>
+                    setResetStaff(
+                      null
+                    )
+                  }
+                  className="bg-gray-400 text-white px-4 py-2 rounded-xl"
+                >
+                  Cancel
+                </button>
+
+                <button
+                  onClick={resetPassword}
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl"
+                >
+                  Update Password
+                </button>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        )
+      }
     </Layout>
+
   );
 }
 
