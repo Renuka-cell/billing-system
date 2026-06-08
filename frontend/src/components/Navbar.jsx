@@ -2,6 +2,10 @@ import { getRole, logout } from "../utils/auth";
 
 function Navbar() {
   const role = getRole();
+  const username =
+    localStorage.getItem(
+      "username"
+    );
 
   return (
     <div className="flex justify-between items-center bg-blue-600 text-white px-6 py-3 shadow-md">
@@ -16,7 +20,7 @@ function Navbar() {
 
       <div className="flex items-center gap-3">
         <span className="bg-white text-blue-600 px-3 py-1 rounded-lg text-sm">
-          {role}
+          {username}
         </span>
 
         <button

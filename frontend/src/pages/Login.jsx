@@ -40,10 +40,22 @@ function Login() {
         res.data.access
       );
 
+      // Save JWT Refresh
+      localStorage.setItem(
+        "refresh",
+        res.data.refresh
+      );
+
       // Save role
       localStorage.setItem(
         "role",
         res.data.role
+      );
+
+      // Username on the navbar
+      localStorage.setItem(
+        "username",
+        res.data.username
       );
 
       // DEBUG STORAGE

@@ -24,8 +24,13 @@ function Sidebar({
 
   const navigate = useNavigate();
 
-  const role =
-    localStorage.getItem("role");
+  //const role =
+    //localStorage.getItem("role");
+
+  const username =
+    localStorage.getItem(
+      "username"
+    );
 
   // =====================================
   // MENU BASED ON ROLE
@@ -97,7 +102,7 @@ function Sidebar({
   ];
 
   const menuItems =
-    role === "admin"
+    username === "admin"
       ? adminMenu
       : staffMenu;
 
@@ -106,7 +111,17 @@ function Sidebar({
   // =====================================
   const handleLogout = () => {
 
-    localStorage.clear();
+    localStorage.removeItem(
+      "token"
+    );
+
+    localStorage.removeItem(
+      "refresh"
+    );
+
+    localStorage.removeItem(
+      "role"
+    );
 
     navigate("/");
   };
@@ -221,8 +236,8 @@ function Sidebar({
 
               <div className="w-12 h-12 rounded-full bg-blue-600 flex items-center justify-center font-bold text-lg shadow-lg">
 
-                {role
-                  ? role.charAt(0).toUpperCase()
+                {username
+                  ? username.charAt(0).toUpperCase()
                   : "U"}
 
               </div>
@@ -230,7 +245,7 @@ function Sidebar({
               <div>
 
                 <p className="font-semibold capitalize">
-                  {role}
+                  {username}
                 </p>
 
                 <p className="text-xs text-slate-400">

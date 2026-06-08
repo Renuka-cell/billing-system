@@ -14,6 +14,9 @@ function StaffManagement() {
   const [password, setPassword] =
     useState("");
 
+  const [confirmPassword, setConfirmPassword] =
+    useState("");
+
   const [editingStaff, setEditingStaff] =
     useState(null);
 
@@ -24,6 +27,10 @@ function StaffManagement() {
     useState(null);
 
   const [newPassword, setNewPassword] =
+    useState("");
+  
+  const [confirmNewPassword,
+    setConfirmNewPassword] =
     useState("");
 
   // ==========================
@@ -65,6 +72,17 @@ function StaffManagement() {
 
     try {
 
+      if (
+        password !== confirmPassword
+      ) {
+
+        toast.error(
+          "Passwords do not match"
+        );
+
+        return;
+      }
+
       await API.post(
         "create-staff/",
         {
@@ -79,7 +97,7 @@ function StaffManagement() {
 
       setUsername("");
       setPassword("");
-
+      setConfirmPassword("");
       fetchStaff();
 
     } catch (err) {
@@ -167,6 +185,27 @@ function StaffManagement() {
 
     try {
 
+      if (!newPassword.trim()) {
+
+        toast.error(
+          "Password is required"
+        );
+
+        return;
+      }
+
+      if (
+        newPassword !==
+        confirmNewPassword
+      ) {
+
+        toast.error(
+          "Passwords do not match"
+        );
+
+        return;
+      }
+
       await API.put(
         `reset-staff-password/${resetStaff.id}/`,
         {
@@ -181,6 +220,8 @@ function StaffManagement() {
       setResetStaff(null);
 
       setNewPassword("");
+
+      setConfirmNewPassword("");
 
     } catch (err) {
 
@@ -239,6 +280,18 @@ function StaffManagement() {
               value={password}
               onChange={(e) =>
                 setPassword(
+                  e.target.value
+                )
+              }
+              className="border rounded-xl p-3"
+            />
+
+            <input
+              type="password"
+              placeholder="Confirm Password"
+              value={confirmPassword}
+              onChange={(e) =>
+                setConfirmPassword(
                   e.target.value
                 )
               }
@@ -338,6 +391,8 @@ function StaffManagement() {
 
                             setNewPassword("");
 
+                            setConfirmNewPassword("");
+
                           }}
                           className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl"
                         >
@@ -433,26 +488,48 @@ function StaffManagement() {
                 Reset Password
               </h2>
 
-              <input
-                type="password"
-                placeholder="Enter New Password"
-                value={newPassword}
-                onChange={(e) =>
-                  setNewPassword(
-                    e.target.value
-                  )
-                }
-                className="w-full border rounded-xl p-3"
-              />
+              <div className="space-y-4">
+
+                <input
+                  type="password"
+                  placeholder="Enter New Password"
+                  value={newPassword}
+                  onChange={(e) =>
+                    setNewPassword(
+                      e.target.value
+                    )
+                  }
+                  className="w-full border rounded-xl p-3"
+                />
+
+                <input
+                  type="password"
+                  placeholder="Confirm New Password"
+                  value={confirmNewPassword}
+                  onChange={(e) =>
+                    setConfirmNewPassword(
+                      e.target.value
+                    )
+                  }
+                  className="w-full border rounded-xl p-3"
+                />
+
+              </div>
 
               <div className="flex justify-end gap-3 mt-5">
 
                 <button
-                  onClick={() =>
+                  onClick={() => {
+
                     setResetStaff(
                       null
-                    )
-                  }
+                    );
+
+                    setNewPassword("");
+
+                    setConfirmNewPassword("");
+
+                  }}
                   className="bg-gray-400 text-white px-4 py-2 rounded-xl"
                 >
                   Cancel

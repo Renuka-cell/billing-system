@@ -657,6 +657,8 @@ def login_user(request):
             "role":
                 profile.role,
 
+            "username": user.username,
+
             "message":
                 "Login successful"
         })
@@ -1212,7 +1214,30 @@ def create_staff(request):
             )
 
         username = request.data.get("username")
+
         password = request.data.get("password")
+        # ==========================
+        # PASSWORD VALIDATION
+        # ==========================
+        password_regex = (
+            r'^(?=.*[a-z])'
+            r'(?=.*[A-Z])'
+            r'(?=.*\d)'
+            r'.{8,}$'
+        )
+
+        if not re.match(
+            password_regex,
+            password
+        ):
+
+            return Response(
+                {
+                    "error":
+                    "Password must contain minimum 8 characters, 1 uppercase letter, 1 lowercase letter and 1 number"
+                },
+                status=400
+            )
 
         if not username or not password:
 
@@ -1434,6 +1459,36 @@ def reset_staff_password(
         new_password = request.data.get(
             "password"
         )
+
+        if not new_password:
+
+            return Response(
+                {"error": "Password required"},
+                status=400
+            )
+
+        # ==========================
+        # PASSWORD VALIDATION
+        # ==========================
+        password_regex = (
+            r'^(?=.*[a-z])'
+            r'(?=.*[A-Z])'
+            r'(?=.*\d)'
+            r'.{8,}$'
+        )
+
+        if not re.match(
+            password_regex,
+            new_password
+        ):
+
+            return Response(
+                {
+                    "error":
+                    "Password must contain minimum 8 characters, 1 uppercase letter, 1 lowercase letter and 1 number"
+                },
+                status=400
+            )
 
         if not new_password:
 

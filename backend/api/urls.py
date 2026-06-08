@@ -1,5 +1,9 @@
 from django.urls import path
 
+from rest_framework_simplejwt.views import (
+    TokenRefreshView
+)
+
 from .views import (
     create_invoice,
     search_customer,
@@ -21,6 +25,11 @@ from .views import (
 urlpatterns = [
 
     path('login/', login_user),
+
+    path(
+        'token/refresh/',
+        TokenRefreshView.as_view()
+    ),
 
     path('create-invoice/', create_invoice),
 
