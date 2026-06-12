@@ -29,6 +29,8 @@ from reportlab.platypus.flowables import (
 
 from django.conf import settings
 
+from .models import ShopDetails
+
 
 def generate_invoice_pdf(invoice):
 
@@ -327,6 +329,36 @@ def generate_invoice_pdf(invoice):
             thickness=0.5,
             color=TEAL_SOFT
         )
+    
+    # =========================================
+    # GET SHOP DETAILS
+    # =========================================
+
+    shop = ShopDetails.objects.first()
+
+    if shop:
+
+        shop_name = shop.shop_name
+
+        address = shop.address
+
+        phone = shop.phone
+
+        email = shop.email
+
+        gst_number = shop.gst_number
+
+    else:
+
+        shop_name = "VISIONCARE"
+
+        address = "MG Road, Bengaluru, Karnataka"
+
+        phone = "+91 9876543210"
+
+        email = ""
+
+        gst_number = ""
 
     # =========================================
     # HEADER
@@ -334,7 +366,7 @@ def generate_invoice_pdf(invoice):
     left_header = [
 
         Paragraph(
-            "VISIONCARE",
+            shop_name,
             S_BRAND
         ),
 
@@ -346,19 +378,22 @@ def generate_invoice_pdf(invoice):
         Spacer(1, 5),
 
         Paragraph(
-            "Premium Eye Care & Optical Solutions",
-            S_BODY
-        ),
-
-        Spacer(1, 4),
-
-        Paragraph(
-            "MG Road, Bengaluru, Karnataka",
+            address,
             S_BODY
         ),
 
         Paragraph(
-            "Phone: +91 9876543210",
+            f"Phone: {phone}",
+            S_BODY
+        ),
+
+        Paragraph(
+            f"Email: {email}",
+            S_BODY
+        ),
+
+        Paragraph(
+            f"GST: {gst_number}",
             S_BODY
         ),
     ]

@@ -5,6 +5,7 @@ import {
   History,
   ClipboardList,
   Users,
+  Settings,
   LogOut,
   X,
 } from "lucide-react";
@@ -77,6 +78,12 @@ function Sidebar({
       name: "Staff Management",
       path: "/staff-management",
       icon: <Users size={20} />,
+    },
+
+    {
+      name: "Shop Settings",
+      path: "/shop-settings",
+      icon: <Settings size={20} />,
     },
   ];
 

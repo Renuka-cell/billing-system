@@ -1,6 +1,11 @@
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from .models import Customer, Invoice, UserProfile
+from .models import (
+    Customer,
+    Invoice,
+    UserProfile,
+    ShopDetails
+)
 from .pdf_utils import generate_invoice_pdf
 
 from rest_framework.permissions import IsAuthenticated
@@ -30,6 +35,9 @@ from .models import UserProfile
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
+from .serializers import (
+    ShopDetailsSerializer
+)
 
 # =========================================
 # ADMIN DASHBOARD
@@ -1520,4 +1528,55 @@ def reset_staff_password(
         return Response(
             {"error": str(e)},
             status=500
+        )
+    
+
+# =========================================
+# SHOP SETTINGS
+# =========================================
+@api_view(['GET', 'PUT'])
+@permission_classes([IsAuthenticated])
+@admin_only
+def shop_settings(request):
+
+    shop = ShopDetails.objects.first()
+
+    if request.method == "GET":
+
+        if not shop:
+
+            return Response({})
+
+        serializer = ShopDetailsSerializer(shop)
+
+        return Response(serializer.data)
+
+    if request.method == "PUT":
+
+        if not shop:
+
+            shop = ShopDetails.objects.create(
+                shop_name="My Optical Shop",
+                address="",
+                phone="",
+                email=""
+            )
+
+        serializer = ShopDetailsSerializer(
+            shop,
+            data=request.data
+        )
+
+        if serializer.is_valid():
+
+            serializer.save()
+
+            return Response({
+                "message":
+                "Shop details updated successfully"
+            })
+
+        return Response(
+            serializer.errors,
+            status=400
         )

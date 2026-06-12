@@ -64,8 +64,11 @@ class InvoiceSerializer(serializers.ModelSerializer):
 
 from rest_framework import serializers
 
-from .models import Customer, Invoice
-
+from .models import (
+    Customer,
+    Invoice,
+    ShopDetails
+)
 
 class CustomerSerializer(serializers.ModelSerializer):
 
@@ -101,4 +104,15 @@ class InvoiceSerializer(serializers.ModelSerializer):
         model = Invoice
 
         fields = '__all__'
+
+
+class ShopDetailsSerializer(
+    serializers.ModelSerializer
+):
+
+    class Meta:
+
+        model = ShopDetails
+
+        fields = "__all__"
 

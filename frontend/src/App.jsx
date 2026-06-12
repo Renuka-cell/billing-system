@@ -22,6 +22,10 @@ import ProtectedRoute from "./components/ProtectedRoute";
 
 import StaffManagement from "./pages/StaffManagement";
 
+import ShopSettings from "./pages/ShopSettings";
+
+import ProtectedRoute from "./components/ProtectedRoute";
+
 function App() {
 
   return (
@@ -98,6 +102,15 @@ function App() {
           element={
             <ProtectedRoute adminOnly={true}>
               <StaffManagement />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/shop-settings"
+          element={
+            <ProtectedRoute adminOnly={true}>
+              <ShopSettings />
             </ProtectedRoute>
           }
         />

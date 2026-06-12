@@ -19,7 +19,8 @@ from .views import (
     staff_list,
     delete_staff,
     update_staff,
-    reset_staff_password
+    reset_staff_password,
+    shop_settings
 )
 
 urlpatterns = [
@@ -102,5 +103,9 @@ urlpatterns = [
     path(
         'reset-staff-password/<int:user_id>/',
         reset_staff_password
+    ),
+    path(
+        'shop-settings/',
+        shop_settings
     ),
 ]
