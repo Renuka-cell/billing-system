@@ -8,7 +8,21 @@ import EditInvoiceModal from "../components/EditInvoiceModal";
 
 import toast from "react-hot-toast";
 
+import {
+  Eye,
+  Download,
+  Search,
+} from "lucide-react";
+
 function InvoiceManagement() {
+
+  const formatInvoiceNumber = (invoice) => {
+    if (!invoice) return "INV-000";
+
+    return `INV-${String(
+      invoice.invoice_id || 0
+    ).padStart(3, "0")}`;
+  };
 
   const [invoices, setInvoices] =
     useState([]);
@@ -30,6 +44,11 @@ function InvoiceManagement() {
 
   const [paymentAmount, setPaymentAmount] =
     useState("");
+
+  const [
+    selectedPrescription,
+    setSelectedPrescription
+  ] = useState(null);
 
   // =====================================
   // PAGINATION
@@ -441,7 +460,7 @@ function InvoiceManagement() {
                       {/* INVOICE */}
                       <td className="px-6 py-5">
                         <div className="font-bold text-slate-800">
-                          {item.invoice_number}
+                          {formatInvoiceNumber(item)}
                         </div>
                       </td>
 
@@ -475,24 +494,22 @@ function InvoiceManagement() {
                       <td className="px-6 py-5">
                         ₹ {item.glass_price}
                       </td>
+                      
 
-                      {/* EYE DESCRIPTION */}
-                      <td className="px-6 py-5">
-                        <div className="text-xs whitespace-pre-line">
-                          RE:
-                          {item.right_sph || "-"} /
-                          {item.right_cyl || "-"} /
-                          {item.right_axis || "-"} /
-                          {item.right_add || "-"}
+                      {/* EYE PRESCRIPTION */}
+                      <td className="px-6 py-5 text-center">
 
-                          {"\n"}
+                        <button
+                          onClick={() =>
+                            setSelectedPrescription(item)
+                          }
+                          className="bg-blue-100 hover:bg-blue-200 text-blue-700 p-2 rounded-xl"
+                        >
 
-                          LE:
-                          {item.left_sph || "-"} /
-                          {item.left_cyl || "-"} /
-                          {item.left_axis || "-"} /
-                          {item.left_add || "-"}
-                        </div>
+                          <Eye size={18} />
+
+                        </button>
+
                       </td>
 
                       {/* TOTAL */}
@@ -736,6 +753,138 @@ function InvoiceManagement() {
             >
               Update Payment
             </button>
+
+          </div>
+
+        </div>
+
+      )}
+
+      {/* ===================================== */}
+      {/* PRESCRIPTION MODAL */}
+      {/* ===================================== */}
+      {selectedPrescription && (
+
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+
+          <div className="bg-white rounded-2xl w-full max-w-3xl p-8">
+
+            <div className="flex items-center justify-between mb-6">
+
+              <h2 className="text-2xl font-bold text-slate-800">
+                Eye Prescription
+              </h2>
+
+              <button
+                onClick={() =>
+                  setSelectedPrescription(null)
+                }
+                className="text-red-500 font-bold text-xl"
+              >
+                ✕
+              </button>
+
+            </div>
+
+            <div className="overflow-x-auto">
+
+              <table className="w-full border border-slate-300">
+
+                <thead className="bg-slate-100">
+
+                  <tr>
+
+                    <th className="border px-4 py-3">
+                      Eye
+                    </th>
+
+                    <th className="border px-4 py-3">
+                      SPH
+                    </th>
+
+                    <th className="border px-4 py-3">
+                      CYL
+                    </th>
+
+                    <th className="border px-4 py-3">
+                      Axis
+                    </th>
+
+                    <th className="border px-4 py-3">
+                      ADD
+                    </th>
+
+                  </tr>
+
+                </thead>
+
+                <tbody>
+
+                  <tr>
+
+                    <td className="border px-4 py-3 font-semibold">
+                      RE
+                    </td>
+
+                    <td className="border px-4 py-3">
+                      {selectedPrescription.right_sph || "--"}
+                    </td>
+
+                    <td className="border px-4 py-3">
+                      {selectedPrescription.right_cyl || "--"}
+                    </td>
+
+                    <td className="border px-4 py-3">
+                      {selectedPrescription.right_axis || "--"}
+                    </td>
+
+                    <td className="border px-4 py-3">
+                      {selectedPrescription.right_add || "--"}
+                    </td>
+
+                  </tr>
+
+                  <tr>
+
+                    <td className="border px-4 py-3 font-semibold">
+                      LE
+                    </td>
+
+                    <td className="border px-4 py-3">
+                      {selectedPrescription.left_sph || "--"}
+                    </td>
+
+                    <td className="border px-4 py-3">
+                      {selectedPrescription.left_cyl || "--"}
+                    </td>
+
+                    <td className="border px-4 py-3">
+                      {selectedPrescription.left_axis || "--"}
+                    </td>
+
+                    <td className="border px-4 py-3">
+                      {selectedPrescription.left_add || "--"}
+                    </td>
+
+                  </tr>
+
+                </tbody>
+
+              </table>
+
+            </div>
+
+            <div className="mt-6">
+
+              <h3 className="font-semibold text-slate-700">
+                Lens Type:
+              </h3>
+
+              <p className="mt-2 bg-slate-100 rounded-xl px-4 py-3">
+                {selectedPrescription.lens_type || "--"}
+              </p>
+
+            </div>
 
           </div>
 

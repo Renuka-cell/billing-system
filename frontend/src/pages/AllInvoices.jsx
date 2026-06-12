@@ -12,6 +12,14 @@ import {
 
 function AllInvoices() {
 
+  const formatInvoiceNumber = (invoice) => {
+    if (!invoice) return "INV-000";
+
+    return `INV-${String(
+      invoice.invoice_id || 0
+    ).padStart(3, "0")}`;
+  };
+
   const [invoices, setInvoices] =
     useState([]);
 
@@ -55,6 +63,51 @@ function AllInvoices() {
 
       alert(
         "Failed to load invoices"
+      );
+    }
+  };
+
+  const downloadInvoice = async (invoiceId) => {
+
+    try {
+
+      const response = await API.get(
+        `download-invoice/${invoiceId}/`,
+        {
+          responseType: "blob",
+        }
+      );
+
+      const file = new Blob(
+        [response.data],
+        {
+          type: "application/pdf",
+        }
+      );
+
+      const fileURL =
+        window.URL.createObjectURL(file);
+
+      const link =
+        document.createElement("a");
+
+      link.href = fileURL;
+
+      link.download =
+        `Invoice-${invoiceId}.pdf`;
+
+      document.body.appendChild(link);
+
+      link.click();
+
+      link.remove();
+
+    } catch (error) {
+
+      console.error(error);
+
+      alert(
+        "Failed to download invoice"
       );
     }
   };
@@ -228,7 +281,7 @@ const totalPages =
                       </td>
 
                       <td className="px-4 py-4 font-semibold text-blue-700">
-                        {invoice.invoice_number}
+                        {formatInvoiceNumber(invoice)}
                       </td>
 
                       <td className="px-4 py-4">
@@ -291,16 +344,16 @@ const totalPages =
                           </button>
 
                           {/* DOWNLOAD */}
-                          <a
-                            href={`http://127.0.0.1:8000${invoice.download_url}`}
-                            target="_blank"
-                            rel="noreferrer"
+                          <button
+                            onClick={() =>
+                              downloadInvoice(
+                                invoice.invoice_id
+                              )
+                            }
                             className="bg-green-100 hover:bg-green-200 text-green-700 p-2 rounded-xl"
                           >
-
                             <Download size={18} />
-
-                          </a>
+                          </button>
 
                         </div>
 

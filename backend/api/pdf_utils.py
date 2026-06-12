@@ -211,6 +211,14 @@ def generate_invoice_pdf(invoice):
         TA_RIGHT
     )
 
+    S_DATE = ps(
+        "S_DATE",
+        8.5,
+        WHITE,
+        False,
+        TA_RIGHT
+    )
+
     S_LABEL = ps(
         "S_LABEL",
         7,
@@ -371,7 +379,7 @@ def generate_invoice_pdf(invoice):
 
         Paragraph(
             f"Date : {invoice.date}",
-            S_BODY
+            S_DATE
         ),
     ]
 
