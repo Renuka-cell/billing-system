@@ -172,3 +172,11 @@ BILLING_SYSTEM
 │   └── vite.config.js
 │
 └── venv
+
+
+## Installation Guide
+
+## Clone Repository
+'''bash
+git clone <repository-url>
+cd BILLING_SYSTEM
