@@ -158,7 +158,7 @@ source venv/bin/activate
 
 #### Install Dependencies
 ```bash
-pip install -r requirements.txt
+pip install -r backend/requirements.txt
 ```
 
 #### Run Database Migrations
@@ -177,5 +177,36 @@ python manage.py runserver
 ```bash
 http://127.0.0.1:8000
 ```
+
+## Frontend Setup
+- Open a new terminal window.
+```bash
+cd frontend
+npm install
+npm run dev
+```
+### Frontend Server URL
+```bash
+http://localhost:5173
+```
 ---
-## 
+## Authentication Workflow
+1. User logs in using username and password.
+2. Backend validates credentials.
+3. JWT Access Token is generated.
+4. JWT Refresh Token is generated.
+5. Protected APIs require valid authentication tokens.
+6. Access Token is automatically refreshed using Refresh Token.
+7. User permissions are controlled using Role-Based Access Control (RBAC).
+---
+## Security Features
+- JWT Authentication
+- Protected API Endpoints
+- Role-Based Authorization
+- Password Validation
+- Secure Session Management
+- Admin-Only Operations
+- Authentication Middleware
+---
+## Author
+Developed as an Internship Project for Optical Shop Billing and Invoice Management Automation.
