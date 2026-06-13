@@ -130,6 +130,47 @@ The application is built using Django REST Framework for the backend and React.j
 
 - ReportLab
 
+## Project Structure
+
+```text
+BILLING_SYSTEM
+│
+├── README.md
+├── requirements.txt
+│
+├── backend
+│   ├── api
+│   │   ├── migrations
+│   │   ├── models.py
+│   │   ├── serializers.py
+│   │   ├── views.py
+│   │   ├── urls.py
+│   │   ├── permissions.py
+│   │   └── pdf_utils.py
+│   │
+│   ├── backend
+│   │   ├── settings.py
+│   │   ├── urls.py
+│   │   ├── asgi.py
+│   │   └── wsgi.py
+│   │
+│   ├── media
+│   ├── db.sqlite3
+│   └── manage.py
+│
+├── frontend
+│   ├── public
+│   ├── src
+│   │   ├── components
+│   │   ├── pages
+│   │   ├── services
+│   │   └── utils
+│   │
+│   ├── package.json
+│   └── vite.config.js
+│
+└── venv
+```
 ---
 ## Installation Guide
 
