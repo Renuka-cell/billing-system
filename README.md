@@ -137,3 +137,10 @@ The application is built using Django REST Framework for the backend and React.j
 ```bash
 git clone <repository-url>
 cd BILLING_SYSTEM
+
+---
+## Backend Setup
+
+### Create Virtual Environment
+```bash
+python -m venv venv
