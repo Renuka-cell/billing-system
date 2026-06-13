@@ -155,3 +155,27 @@ venv\Scripts\Activate
 ```bash
 source venv/bin/activate
 ```
+
+#### Install Dependencies
+```bash
+pip install -r requirements.txt
+```
+
+#### Run Database Migrations
+```bash
+cd backend
+python manage.py makemigrations
+python manage.py migrate
+```
+
+#### Start Backend Server
+```bash
+python manage.py runserver
+```
+
+#### Backend Server URL
+```bash
+http://127.0.0.1:8000
+```
+---
+## 
