@@ -118,7 +118,7 @@ The application is built using Django REST Framework for the backend and React.j
 - React Hot Toast
 - Lucide React
 
-### 1. Backend
+### Backend
 
 - Python
 - Django
@@ -139,7 +139,7 @@ git clone <repository-url>
 cd BILLING_SYSTEM
 ```
 
-## Backend Setup
+## 1. Backend Setup
 
 ### Create Virtual Environment
 ```bash
@@ -178,7 +178,7 @@ python manage.py runserver
 http://127.0.0.1:8000
 ```
 
-## Frontend Setup
+## 2. Frontend Setup
 - Open a new terminal window.
 ```bash
 cd frontend
