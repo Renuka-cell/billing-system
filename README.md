@@ -133,7 +133,7 @@ The application is built using Django REST Framework for the backend and React.j
 ---
 ## Installation Guide
 
-## Clone Repository
+### Clone Repository
 '''bash
 git clone <repository-url>
 cd BILLING_SYSTEM
