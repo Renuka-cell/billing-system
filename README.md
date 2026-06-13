@@ -118,7 +118,7 @@ The application is built using Django REST Framework for the backend and React.j
 - React Hot Toast
 - Lucide React
 
-### Backend
+### 1. Backend
 
 - Python
 - Django
